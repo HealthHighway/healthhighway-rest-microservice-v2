@@ -1,0 +1,8 @@
+dist/
+node_modules/
+temp/
+__MACOSX/
+.DS_Store
+.newrelic.js
+.package-lock.json
+.newrelic_agent.log

@@ -1,0 +1,33 @@
+{
+  "name": "healthhighway-rest-microservice-v2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Health Highway Private Limited",
+  "license": "ISC",
+  "dependencies": {
+    "api": "^3.4.2",
+    "aws-sdk": "^2.1082.0",
+    "axios": "^0.26.0",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.3.1",
+    "express-validator": "^6.14.0",
+    "firebase-admin": "^10.0.0",
+    "googleapis": "^67.0.0",
+    "into-stream": "^7.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "md5": "^2.3.0",
+    "mongoose": "^5.11.5",
+    "nodemailer": "^6.7.0",
+    "short-uuid": "^4.2.0",
+    "sib-api-v3-sdk": "^8.2.1",
+    "uuid": "^8.3.2"
+  }
+}
