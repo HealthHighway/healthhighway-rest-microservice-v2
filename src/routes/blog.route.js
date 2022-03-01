@@ -116,6 +116,43 @@ router.post("/", [
 
 })
 
+router.post("/admin", [
+    body('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page type"),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit type"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
+
+        let mongoQuery = []
+
+        if(req.body.searchQuery){
+            mongoQuery.push({$text: { $search: req.body.searchQuery } })
+        }
+
+        if(req.body.categoryKeywords){
+            mongoQuery.push({ categoryKeywords : { $all : req.body.categoryKeywords } })
+        }
+
+        const blogs = await BlogModel
+                                .find({ $and : mongoQuery })
+                                .sort({ createdAt : -1 })
+                                .skip( limit * (page-1) )
+                                .limit(limit)
+                                .lean()
+
+        jRes(res, 200, blogs)
+
+    }catch(err){
+        console.log(err)
+        jRes(res, 400, err);
+    }
+
+})
+
 router.post("/getFeatured", [
     body('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page type"),
     body('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit type"),
@@ -197,6 +234,62 @@ router.post("/uploadImagesOnS3", [
 
         }
         
+    }catch(err){
+
+        console.log(err)
+        jRes(res, 400, err)
+
+    }
+
+})
+
+router.post("/toggleFeaturedStatus", [
+    body('_id').exists().withMessage("_id not found").isMongoId().withMessage('invalid _id type'),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const isBlogPresent = await BlogModel.findOne({ _id : req.body._id })
+
+        if(isBlogPresent){
+
+            await BlogModel.findOneAndUpdate({ _id : req.body._id }, { isFeatured : !isBlogPresent.isFeatured })
+
+            jRes(res, 200, "Updated Blog Featured Status")
+
+        }else{
+            jRes(res, 200, "No Such Blog Present")
+        }
+
+
+    }catch(err){
+
+        console.log(err)
+        jRes(res, 400, err)
+
+    }
+
+})
+
+router.post("/toggleHiddenStatus", [
+    body('_id').exists().withMessage("_id not found").isMongoId().withMessage('invalid _id type'),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const isBlogPresent = await BlogModel.findOne({ _id : req.body._id })
+
+        if(isBlogPresent){
+
+            await BlogModel.findOneAndUpdate({ _id : req.body._id }, { isHidden : !isBlogPresent.isHidden })
+
+            jRes(res, 200, "Updated Blog Featured Status")
+
+        }else{
+            jRes(res, 200, "No Such Blog Present")
+        }
+
+
     }catch(err){
 
         console.log(err)
