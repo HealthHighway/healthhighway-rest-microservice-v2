@@ -2,7 +2,8 @@ import express from "express";
 import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
-import {BlogModel} from "../models/schema/blog.schema"
+import {BlogModel} from "../models/schema/blog.schema.js"
+import {AuthorModel} from "../models/schema/author.schema.js"
 import { getBlogPath } from "../utils/blog.util.js";
 import { uploadRecursively } from "../utils/upload.util.js";
 
@@ -60,7 +61,7 @@ router.post("/addBlog", [
                 ...req.body,
                 author : name,
                 authorImage : profilePhotoUrl,
-                likes : Math.ceil(Math.random()*1000 + 1),
+                likes : Math.ceil(Math.random()*1000 + 1)
             })
 
             await blogToBeInserted.save()

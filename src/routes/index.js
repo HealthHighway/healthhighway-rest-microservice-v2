@@ -1,3 +1,4 @@
+import express from "express";
 
 import blog from "./blog.route.js"
 import callback from "./callback.route.js"
@@ -13,6 +14,7 @@ import trainer from './trainer.route.js'
 import ttc from './ttc.route.js'
 import user from './user.route.js'
 import webinar from './webinar.route.js'
+import filter from './filter.route.js'
 
 const apiRoutes = express.Router()
 
