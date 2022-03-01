@@ -1,5 +1,6 @@
 import express from "express";
 
+import author from './author.route.js'
 import blog from "./blog.route.js"
 import callback from "./callback.route.js"
 import corporate from './corporate.route.js'
@@ -18,6 +19,7 @@ import filter from './filter.route.js'
 
 const apiRoutes = express.Router()
 
+apiRoutes.use("/author", author)
 apiRoutes.use("/blog", blog)
 apiRoutes.use("/callback", callback)
 apiRoutes.use("/corporate", corporate)

@@ -48,15 +48,16 @@ router.post("/addBlog", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try
-    {
+    {   
         // find the corresponding author
-        const author = await AuthorModel.findOne({ _id : req.params.authorId })
+        const author = await AuthorModel.findOne({ _id : req.body.authorId })
 
         if(author){
 
             const { name, profilePhotoUrl } = author
 
             delete req.body.authorId
+
             const blogToBeInserted = await BlogModel({
                 ...req.body,
                 author : name,
@@ -217,7 +218,15 @@ router.post("/uploadImagesOnS3", [
 
     try{
 
-        if(req.files && req.files.length > 0){
+        const isBlogWithGiven_idPresent = await BlogModel.findOne({ _id : req.body._id });
+
+        if(isBlogWithGiven_idPresent){
+            jRes(res, 400, "blog with this _id already present")
+            return
+        }
+
+        console.log(req.files)
+        if(req.files && Object.values(req.files).length > 0){
 
             const { path, _id }  = req.body
     
@@ -226,7 +235,7 @@ router.post("/uploadImagesOnS3", [
             let listContainingUploadedImages = []
             await uploadRecursively(Object.values(req.files), 0, listContainingUploadedImages, path, _id)
     
-            jRes(res, 200, { path, _id : newBlog._id, isBlogWithGivenUrlPresent : isBlogWithGivenUrlPresent?true:false, listContainingUploadedImages })
+            jRes(res, 200, { path, _id : _id, isBlogWithGivenUrlPresent : isBlogWithGivenUrlPresent?true:false, listContainingUploadedImages })
 
         }else{
 

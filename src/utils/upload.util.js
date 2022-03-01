@@ -23,7 +23,7 @@ export function uploadFileStreamOnS3(buffer, fileName)
         {
             const params = {
                 Bucket: AwsStorage.BUCKET_NAME,
-                Key: "development/"+fileName,
+                Key: "images/blogs/"+fileName,
                 Body: getStream(buffer),
                 ACL: "public-read",
             }
