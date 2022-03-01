@@ -16,7 +16,7 @@ mApplication.use(express.urlencoded({ limit: '50mb', extended: true }));
 mApplication.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 }, 
 }));
-mApplication.use(isReqAuthenticated)
+// mApplication.use(isReqAuthenticated)
 
 let mServer = http.createServer(mApplication);
 mServer.listen(SERVER_PORT);

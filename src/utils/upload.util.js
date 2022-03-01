@@ -46,3 +46,15 @@ export function uploadFileStreamOnS3(buffer, fileName)
     });
 }
 
+export async function uploadRecursively(data, currIndex, listContainingUploadedImages, path, newBlogId){
+    if(currIndex > data.length-1){
+        return listContainingUploadedImages
+    }else{
+        let originalName = data[currIndex].name.split(".")
+        let fileName = `${originalName[0]}_${getRandomFileName()}.${originalName[originalName.length-1]}`
+        const uploadedUrl = await uploadFileStreamOnS3(data[currIndex].data, `${path}_${newBlogId}/${fileName}`);
+        listContainingUploadedImages.push(uploadedUrl);
+        await uploadRecursively(data, currIndex+1, listContainingUploadedImages, path, newBlogId);
+    }
+}
+

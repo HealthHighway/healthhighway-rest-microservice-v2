@@ -9,9 +9,9 @@ export const blogSchema = new mongoose.Schema({
     authorImage : { type : String },
     categoryKeywords : { type : [String] },
     createdAt : {type : Date, index : true},
-    redirectUrl : {type : String, index : true},
+    path : {type : String, index : true},
     likes : { type : Number },
-    isFeatured : { type : Boolean, index : true },
+    isFeatured : { type : Boolean, index : true, default : false },
     isHidden : { type : Boolean, index : true, default : false },
     htmlContent : { type : String }
 })
