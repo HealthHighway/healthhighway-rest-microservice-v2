@@ -6,6 +6,7 @@ import {BlogModel} from "../models/schema/blog.schema.js"
 import {AuthorModel} from "../models/schema/author.schema.js"
 import { getBlogPath } from "../utils/blog.util.js";
 import { uploadRecursively } from "../utils/upload.util.js";
+import sizeOf from 'buffer-image-size'
 
 var router = express.Router();
 
@@ -225,17 +226,35 @@ router.post("/uploadImagesOnS3", [
             return
         }
 
-        console.log(req.files)
         if(req.files && Object.values(req.files).length > 0){
 
-            const { path, _id }  = req.body
+            let isAllWithProperDimensions = true
+
+            Object.values(req.files).forEach(data => {
+
+                let width = sizeOf(data.data).width
+                let height = sizeOf(data.data).height
+
+                if(width < 1920 || height < 1080 || (width*9 != height*16)){
+                    isAllWithProperDimensions = false
+                }
+
+            })
+
+            if(isAllWithProperDimensions){
+                const { path, _id }  = req.body
     
-            let isBlogWithGivenUrlPresent = await BlogModel.findOne({ path })
+                let isBlogWithGivenUrlPresent = await BlogModel.findOne({ path })
+                
+                let listContainingUploadedImages = []
+                await uploadRecursively(Object.values(req.files), 0, listContainingUploadedImages, path, _id)
+        
+                jRes(res, 200, { path, _id : _id, isBlogWithGivenUrlPresent : isBlogWithGivenUrlPresent?true:false, listContainingUploadedImages })
+            }
+            else{
+                jRes(res, 400, "image(s) not with advised dimensions")
+            }
             
-            let listContainingUploadedImages = []
-            await uploadRecursively(Object.values(req.files), 0, listContainingUploadedImages, path, _id)
-    
-            jRes(res, 200, { path, _id : _id, isBlogWithGivenUrlPresent : isBlogWithGivenUrlPresent?true:false, listContainingUploadedImages })
 
         }else{
 
