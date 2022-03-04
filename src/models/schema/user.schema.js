@@ -6,7 +6,7 @@ export const userSchema = new mongoose.Schema({
     name : { type : String },
     phoneNumber : { type : String },
     bio : { type : Object },
-    privateSessionsBooked : [{ type: mongoose.Schema.Types.ObjectId, ref: 'private-sessions' }],
+    // privateSessionsBooked : [{ type: mongoose.Schema.Types.ObjectId, ref: 'private-sessions' }],
     freeSessionsAvailed : { type : Number }, //free sessions availed
     profilePhotoUrl : { type : String }, 
     groupSessionsBooked : {
@@ -25,9 +25,9 @@ export const userSchema = new mongoose.Schema({
         type : Map,
         of : String,
     },
-    callbacks : [{ type: mongoose.Schema.Types.ObjectId, ref: 'callbacks' }],
-    webinars : [{ type: mongoose.Schema.Types.ObjectId, ref: 'webinars' }],
-    curates : [{ type: mongoose.Schema.Types.ObjectId, ref: 'curates' }]
+    // callbacks : [{ type: mongoose.Schema.Types.ObjectId, ref: 'callbacks' }],
+    // webinars : [{ type: mongoose.Schema.Types.ObjectId, ref: 'webinars' }],
+    // curates : [{ type: mongoose.Schema.Types.ObjectId, ref: 'curates' }]
 }, {
     timestamps: true
 })

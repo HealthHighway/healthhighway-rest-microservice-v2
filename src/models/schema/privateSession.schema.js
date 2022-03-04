@@ -7,7 +7,7 @@ export const privateSessionSchema = new mongoose.Schema({
     sessionCount : { type : Number }, 
     timeIn24HrFormat : { type : String }, 
     weekDays : { type : [String] }, 
-    trainerId : { type: mongoose.Schema.Types.ObjectId, ref: 'trainers' },
+    trainerId : { type: mongoose.Schema.Types.ObjectId, ref: 'trainers', index : true },
     videoCallChannelId : { type : String }, 
     weight : { type : String }, 
     height : { type : String },   
@@ -15,7 +15,7 @@ export const privateSessionSchema = new mongoose.Schema({
     trainerGenderPreference : { type : String }, 
     calendar : [Object],
     createdAt : { type : Date, index : true },
-    userId : { type: mongoose.Schema.Types.ObjectId, ref: 'users' }
+    userId : { type: mongoose.Schema.Types.ObjectId, ref: 'users', index : true }
 }, {
     timestamps: true
 })

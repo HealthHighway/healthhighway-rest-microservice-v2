@@ -11,8 +11,9 @@ export const blogSchema = new mongoose.Schema({
     createdAt : {type : Date, index : true},
     path : {type : String, index : true},
     likes : { type : Number },
-    isFeatured : { type : Boolean, index : true, default : false },
-    isHidden : { type : Boolean, index : true, default : false },
+    isFeatured : { type : Boolean, index : true, default : false }, // can apply attribute pattern here
+    isHidden : { type : Boolean, index : true, default : false }, // can apply attribute pattern here
+//  decidingKeys : { type : [ { key : String, value : Boolean }] } // this way, adding additional keys each time we add another booltype won;t be requiring indexing 
     htmlContent : { type : String }
 })
 
