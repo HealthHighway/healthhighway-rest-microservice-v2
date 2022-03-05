@@ -2,13 +2,15 @@
 import mongoose from 'mongoose';
 
 export const userSchema = new mongoose.Schema({
-    email : { type : String },
-    name : { type : String },
-    phoneNumber : { type : String },
-    bio : { type : Object },
-    // privateSessionsBooked : [{ type: mongoose.Schema.Types.ObjectId, ref: 'private-sessions' }],
-    freeSessionsAvailed : { type : Number }, //free sessions availed
-    profilePhotoUrl : { type : String }, 
+    email : String,
+    password : String,
+    name : String,
+    phoneNumber : String,
+    bio : Object,
+    privateSessionsBooked : [{ type: mongoose.Schema.Types.ObjectId, ref: 'private-sessions' }],
+    gmailAddress : String,
+    freeSessionsAvailed : Number,
+    profilePhotoUrl : String, 
     groupSessionsBooked : {
         type : Map,
         of : {
@@ -20,13 +22,12 @@ export const userSchema = new mongoose.Schema({
         }
     },
     createdAt : {type : Date, index : true},
-    status : { type : String },
+    status : String,
     likedPosts : {
         type : Map,
         of : String,
     },
     // callbacks : [{ type: mongoose.Schema.Types.ObjectId, ref: 'callbacks' }],
-    // webinars : [{ type: mongoose.Schema.Types.ObjectId, ref: 'webinars' }],
     // curates : [{ type: mongoose.Schema.Types.ObjectId, ref: 'curates' }]
 }, {
     timestamps: true
