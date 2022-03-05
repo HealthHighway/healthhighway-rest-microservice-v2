@@ -311,7 +311,7 @@ router.post("/toggleHiddenStatus", [
 
             await BlogModel.findOneAndUpdate({ _id : req.body._id }, { isHidden : !isBlogPresent.isHidden })
 
-            jRes(res, 200, "Updated Blog Featured Status")
+            jRes(res, 200, "Updated Blog Hidden Status")
 
         }else{
             jRes(res, 200, "No Such Blog Present")
