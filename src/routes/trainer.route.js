@@ -10,10 +10,34 @@ router.get('/', function (req, res) {
     res.send('Welcome to Trainer Home Route')
 })
 
+router.post("/:page/:limit",[
+    body('page').exists().withMessage("page not found").isNumeric().withMessage("page should be string"),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage("limit should be string")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
+
+        const trainers = await TrainerModel
+                                .find({})
+                                .skip( limit * (page-1) )
+                                .limit(limit)
+
+        jRes(res, 200, newTrainer)
+
+    }catch(err){
+        jRes(res, 400, err);
+    }
+
+})
+
 router.post("/entryWithPhoneNumber",[
     body('phoneNumber').exists().withMessage("phoneNumber not found").isString().withMessage("phoneNumber should be string"),
     body('name').exists().withMessage("name not found").isString().withMessage("name should be string")
-], checkRequestValidationMiddleware, (req, res) => {
+], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
 

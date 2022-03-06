@@ -23,10 +23,8 @@ export const userSchema = new mongoose.Schema({
     },
     createdAt : {type : Date, index : true},
     status : String,
-    likedPosts : {
-        type : Map,
-        of : String,
-    },
+    likedBlogs : Object,
+    likedSocials : Object,
     // callbacks : [{ type: mongoose.Schema.Types.ObjectId, ref: 'callbacks' }],
     // curates : [{ type: mongoose.Schema.Types.ObjectId, ref: 'curates' }]
 }, {

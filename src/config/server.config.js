@@ -1,3 +1,5 @@
+import path from 'path';
+
 export const SERVER_PORT = process.env.PORT || 8001;
 
 export const DATABASE_CONNECTION = "mongodb+srv://HealthHighway:healthhighway2020@cluster0.fgdnq.mongodb.net/healthhighway";
@@ -20,5 +22,7 @@ export const sendClean = {
     smtp_user_name : "smtp48815141",
     from_email : "info@healthhighway.co.in",
     from_name : "Health Highway",
-    
 }
+
+const __dirname = path.resolve();
+export const TEMP_BASE_PATH = path.join(__dirname, "/temp/");

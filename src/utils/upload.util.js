@@ -15,7 +15,7 @@ export function getRandomFileName() {
     return random_number;
 }
 
-export function uploadFileStreamOnS3(buffer, fileName)
+export function uploadFileStreamOnS3(buffer, path)
 {
     return new Promise(async (resolve, reject) =>
     {
@@ -23,9 +23,41 @@ export function uploadFileStreamOnS3(buffer, fileName)
         {
             const params = {
                 Bucket: AwsStorage.BUCKET_NAME,
-                Key: "images/blogs/"+fileName,
+                Key: path,
                 Body: getStream(buffer),
                 ACL: "public-read",
+            }
+
+            s3.upload(params, (err, data) =>
+            {
+                if (err) {
+                    reject(err)
+                    return;
+                }
+                console.log("S3path ==>",data.Location)
+                resolve(data.Location);
+                return;
+            });
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    });
+}
+
+export function uploadFileStreamOnS3ForSocial(filePath, fileName)
+{
+    return new Promise(async (resolve, reject) =>
+    {
+        try
+        {
+            const fileStream = fs.createReadStream(filePath);
+            const params = {
+                Bucket: AwsStorage.BUCKET_NAME,
+                Key: "images/social/" + fileName,
+                Body: fileStream,
+                ACL: "public-read"
             }
 
             s3.upload(params, (err, data) =>
@@ -50,11 +82,22 @@ export async function uploadRecursively(data, currIndex, listContainingUploadedI
     if(currIndex > data.length-1){
         return listContainingUploadedImages
     }else{
-        let originalName = data[currIndex].name.split(".")
-        let fileName = `${originalName[0]}_${getRandomFileName()}.${originalName[originalName.length-1]}`
-        const uploadedUrl = await uploadFileStreamOnS3(data[currIndex].data, `${path}_${newBlogId}/${fileName}`);
+        let fileName = `${getRandomFileName()}_${data[currIndex].name}`
+        const uploadedUrl = await uploadFileStreamOnS3(data[currIndex].data, `images/blogs/${path}_${newBlogId}/${fileName}`);
         listContainingUploadedImages.push(uploadedUrl);
         await uploadRecursively(data, currIndex+1, listContainingUploadedImages, path, newBlogId);
     }
 }
 
+export function getFileNameFromPath(input)
+{
+    const index1 = input.indexOf('?')
+    let modifiedName = "";
+    if(index1 != -1){
+        modifiedName = input.substring(0, index1)        
+    }else{
+        modifiedName = input;
+    }
+
+    return modifiedName.substring(modifiedName.lastIndexOf('/') + 1, modifiedName.length)
+}

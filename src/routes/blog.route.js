@@ -4,6 +4,7 @@ import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
 import {BlogModel} from "../models/schema/blog.schema.js"
 import {AuthorModel} from "../models/schema/author.schema.js"
+import {UserModel} from "../models/schema/user.schema.js"
 import { getBlogPath } from "../utils/blog.util.js";
 import { uploadRecursively } from "../utils/upload.util.js";
 import sizeOf from 'buffer-image-size'
@@ -325,6 +326,73 @@ router.post("/toggleHiddenStatus", [
 
     }
 
+})
+
+router.get("/like/:blogId/:userId", [
+    param('blogId').exists().withMessage("blogId not found").isMongoId().withMessage("invalid blogId"),
+    param('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const isUser = await UserModel.findOne({ _id : req.params.userId })
+
+        if(!isUser){
+            jRes(res, 400, "No such user present")
+            return
+        }
+
+        if(isUser.likedBlogs){
+            if(isUser.likedBlogs[req.params.blogId]){
+                jRes(res, 400, "User has already liked the blog")
+                return;
+            }else{
+                isUser.likedBlogs = { ...isUser.likedBlogs, [req.params.blogId] : req.params.blogId }
+            }
+        }else{
+            isUser.likedBlogs = {}
+            isUser.likedBlogs = { ...isUser.likedBlogs, [req.params.blogId] : req.params.blogId }
+        }
+
+        await UserModel.findOneAndUpdate({ _id : req.params.userId }, { likedBlogs : isUser.likedBlogs}, { new : true })
+        await BlogModel.findOneAndUpdate({ _id : req.params.blogId }, { $inc : { likes : 1 } }, { new : true })
+
+        jRes(res, 200, isUser)
+
+       
+    }catch(err){
+        jRes(res, 400, err);
+    }
+})
+
+router.get("/dislike/:blogId/:userId", [
+    param('blogId').exists().withMessage("blogId not found").isMongoId().withMessage("invalid blogId"),
+    param('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const isUser = await UserModel.findOne({ _id : req.params.userId });
+
+        if(!isUser){
+            jRes(res, 400, "No such user present")
+            return
+        }
+
+        if(isUser.likedBlogs && isUser.likedBlogs[req.params.blogId]){
+            delete isUser.likedBlogs[req.params.blogId]
+        }else{
+            jRes(res, 400, "User has not liked the blog")
+        }
+
+        await UserModel.findOneAndUpdate({ _id : req.params.userId }, { likedBlogs : isUser.likedBlogs}, { new : true })
+        await BlogModel.findOneAndUpdate({ _id : req.params.blogId }, { $inc : { likes : -1 } }, { new : true })
+
+        jRes(res, 200, isUser)
+
+    }catch(err){
+        jRes(res, 400, err);
+    }
 })
 
 export default router;
