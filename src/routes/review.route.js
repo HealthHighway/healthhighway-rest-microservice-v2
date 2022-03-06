@@ -23,9 +23,9 @@ router.post("/", [
     }
 })
 
-router.get("/:page/:limit", [
-    param('page').exists().withMessage("page not found").isNumeric().withMessage('invalid page type'),
-    param('limit').exists().withMessage("limit not found").isNumeric().withMessage('invalid limit type')
+router.post("/", [
+    body('page').exists().withMessage("page not found").isNumeric().withMessage('invalid page type'),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage('invalid limit type')
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {

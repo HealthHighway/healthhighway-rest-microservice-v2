@@ -10,6 +10,23 @@ router.get('/', function (req, res) {
     res.send('Welcome to Trainer Home Route')
 })
 
+router.get("/:trainerId", [
+    param('trainerId').exists().withMessage("trainerId not found").isMongoId().withMessage("invalid trainerId")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try {
+
+        const trainer = await TrainerModel.findOne({ _id : req.params.trainerId })
+
+        jRes(res, 200, trainer)
+
+    }catch(err){
+        console.log(err);
+        jRes(res, 400, err);
+    }
+
+})
+
 router.post("/:page/:limit",[
     body('page').exists().withMessage("page not found").isNumeric().withMessage("page should be string"),
     body('limit').exists().withMessage("limit not found").isNumeric().withMessage("limit should be string")

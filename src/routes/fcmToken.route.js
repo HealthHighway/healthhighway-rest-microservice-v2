@@ -11,6 +11,32 @@ router.get('/', function (req, res) {
     res.send('Welcome to FcmToken Home Route')
 })
 
+router.post("/", [
+    body('page').exists().withMessage("page not found").isNumeric().withMessage('invalid page type'),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage('invalid limit type')
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try {
+
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
+
+        const fcmTokens = await FcmTokenModel
+                                .find()
+                                .sort({ createdAt : -1 })
+                                .skip( limit * (page-1) )
+                                .limit(limit)
+                                .populate("userId")
+
+        jRes(res, 200, fcmTokens)
+
+    }catch(err){
+        jRes(res, 400, err)
+    }
+
+})
+
 router.post("/addFcmToken", [
     body('fcmToken').exists().withMessage("fcmToken not found").isString().withMessage("fcmToken should be string"),
 ], checkRequestValidationMiddleware, async (req, res) => {

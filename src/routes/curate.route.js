@@ -67,14 +67,14 @@ router.get("/:userId/:page/:limit", [
 
 })
 
-router.get("/admin", [
-    param('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page"),
-    param('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit"),
+router.post("/admin", [
+    body('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page"),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit"),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
 
-        let {page, limit} = req.params
+        let {page, limit} = req.body
         let skip = Number(Number(limit) * (Number(page) - 1))
 
         let curated = await CurateModel.find({})
