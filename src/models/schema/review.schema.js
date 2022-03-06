@@ -7,9 +7,8 @@ export const reviewSchema = new mongoose.Schema({
     rating : { type : Number },
     others : { type : String },
     sessionId : { type : mongoose.Schema.Types.ObjectId },
-    userId : { type : mongoose.Schema.Types.ObjectId }
-}, {
-    timestamps: true
+    userId : { type : mongoose.Schema.Types.ObjectId },
+    createdAt : { type : Date, index : true }
 })
 
 export const ReviewModel = mongoose.model('reviews', reviewSchema)

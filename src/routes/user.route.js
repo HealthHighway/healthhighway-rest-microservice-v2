@@ -165,7 +165,7 @@ router.post("/addPhoneNumber", [
     }
 })
 
-router.post("/addUpdateName", [
+router.post("/upsertName", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('name').exists().withMessage("name not found").isString().withMessage("name should be string"),
 ], checkRequestValidationMiddleware, async (req, res) => {

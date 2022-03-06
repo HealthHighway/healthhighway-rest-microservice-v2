@@ -26,7 +26,7 @@ router.post("/:page/:limit",[
                                 .skip( limit * (page-1) )
                                 .limit(limit)
 
-        jRes(res, 200, newTrainer)
+        jRes(res, 200, trainers)
 
     }catch(err){
         jRes(res, 400, err);
