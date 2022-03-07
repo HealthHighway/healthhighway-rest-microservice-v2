@@ -17,7 +17,7 @@ export const sendSignUpMail = (c_name, c_email) => {
     mailRequestHelper(signUpMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Let's begin your journey with Health Highway`)
 }
 
-export const sendFreeSessionBookingMail = (c_name, c_email, ssn_name) => {
+export const getFreeGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
     let td = new Date();
     let freeSessionBookingMail;
     if(c_name == ""){

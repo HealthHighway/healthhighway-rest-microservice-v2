@@ -3,6 +3,8 @@ import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
 import {CallbackModel} from "../models/schema/callback.schema.js"
+import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js";
+import { fcmSubscribedChannels } from "../config/server.config.js";
 
 var router = express.Router();
 
@@ -17,6 +19,8 @@ router.post("/", [
 
     try{
         await CallbackModel.insertOne({ ...req.body, createdAt : new Date().toISOString() })
+
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `Callback Scheduled`, `A user named ${req.body.name} has scheduled a callback`, "")
 
         jRes(res, 200, "Callback Scheduled")
     }catch(err){

@@ -64,7 +64,7 @@ router.post("/entryWithGoogleOAuth", [
         await newUser.save()
 
         // send notification to admin
-        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A new user named ${newUser.name} has signed up via google oauth`, `A new user named ${newUser.name} has signed up via google oauth`, "")
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A New Sign Up`, `A new user named ${newUser.name} has signed up via google oauth`, "")
         // send welcome mail to user
         sendSignUpMail(newUser.name, newUser.gmailAddress)
 
@@ -105,7 +105,7 @@ router.post("/entryWithPhoneNumber", [
         await newUser.save()
 
         // send notification to admin
-        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A new user named ${newUser.name} has signed up via phone number`, `A new user named ${newUser.name} has signed up via phone number`, "")
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A New Sign Up`, `A new user named ${newUser.name} has signed up via phone number`, "")
 
         jRes(res, 200, newUser)
 

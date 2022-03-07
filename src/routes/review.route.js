@@ -3,6 +3,8 @@ import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
 import {ReviewModel} from "../models/schema/review.schema"
+import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js";
+import { fcmSubscribedChannels } from "../config/server.config.js";
 
 var router = express.Router();
 
@@ -11,11 +13,14 @@ router.get('/', function (req, res) {
 })
 
 router.post("/", [
+    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('rating').exists().withMessage("rating not found").isNumeric().withMessage('invalid rating type')
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
         await ReviewModel.insertOne({ ...req.body, createdAt : new Date().toISOString() })
+
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `Review Posted`, `A user has posted a review`, "")
 
         jRes(res, 200, "Review Posted")
     }catch(err){
