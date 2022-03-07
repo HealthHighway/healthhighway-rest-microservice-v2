@@ -25,4 +25,9 @@ export const sendClean = {
 }
 
 const __dirname = path.resolve();
-export const TEMP_BASE_PATH = path.join(__dirname, "/temp/");
+export const TEMP_BASE_PATH = path.join(__dirname, "/temp/")
+
+export const fcmSubscribedChannels = {
+    ADMIN : "ADMIN",
+    ALL : "ALL"
+}

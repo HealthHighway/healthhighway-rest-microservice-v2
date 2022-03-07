@@ -3,7 +3,7 @@ import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
 import { GroupSessionFilterModel } from "../models/schema/groupSessionFilter.schema.js";
-import { arraymove } from "../utils/blogFilter.util.js";
+import { arraymove } from "../utils/filter.util.js";
 
 var router = express.Router();
 

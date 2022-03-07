@@ -9,7 +9,7 @@ export const userSchema = new mongoose.Schema({
     bio : Object,
     privateSessionsBooked : [{ type: mongoose.Schema.Types.ObjectId, ref: 'private-sessions' }],
     gmailAddress : String,
-    freeSessionsAvailed : Number,
+    freeSessionsAvailed : {type : Number, default : 0},
     profilePhotoUrl : String, 
     groupSessionsBooked : {
         type : Map,
@@ -25,6 +25,8 @@ export const userSchema = new mongoose.Schema({
     status : String,
     likedBlogs : Object,
     likedSocials : Object,
+    lastEntryLocation : Object,
+    lastEntryPoint : String
     // callbacks : [{ type: mongoose.Schema.Types.ObjectId, ref: 'callbacks' }],
     // curates : [{ type: mongoose.Schema.Types.ObjectId, ref: 'curates' }]
 }, {

@@ -33,6 +33,10 @@ router.post("/:userId", [
         await newCurate.save()
 
         let fcmData = await FcmTokenModel.findOne({ userId : req.body.userId }).populate('userId')
+        
+        // if gmailAddress exists, then send mail
+
+        // send notification
         if(fcmData && fcmData.fcmToken){
             sendNotification([fcmData.fcmToken], `Hi ${fcmData.userId.name}, here is a Session for you`, "Checkout the Session Curated for You!!!", "fcm_default_channel12321232", "1")
         }

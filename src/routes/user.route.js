@@ -3,6 +3,9 @@ import { body, param } from "express-validator"
 import { jRes } from "../utils/response.js"
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js"
 import {UserModel} from "../models/schema/user.schema.js"
+import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js"
+import { fcmSubscribedChannels } from "../config/server.config.js"
+import { sendSignUpMail } from "../utils/email.util.js"
 
 var router = express.Router();
 
@@ -31,11 +34,18 @@ router.post("/entryWithGoogleOAuth", [
     body('name').exists().withMessage("name not found").isString().withMessage("name should be string"),
     body('gmailAddress').exists().withMessage("gmailAddress not found").isString().withMessage("gmailAddress should be string"),
     body('profilePhotoUrl').exists().withMessage("profilePhotoUrl not found").isString().withMessage("profilePhotoUrl should be string"),
+    body('lastEntryLocation').exists().withMessage("lastEntryLocation not found").isObject().withMessage("lastEntryLocation should be string"),
+    body('lastEntryPoint').exists().withMessage("lastEntryPoint not found").isString().withMessage("lastEntryPoint should be string")
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
         
-        const isUser = await UserModel.findOne({ gmailAddress : req.body.profilePhotoUrl })
+        const isUser = await UserModel
+                            .findOneAndUpdate(
+                                { gmailAddress : req.body.gmailAddress },
+                                { lastEntryLocation : req.body.lastEntryLocation, lastEntryPoint : req.body.lastEntryPoint},
+                                { new : true }
+                            )
 
         if(isUser){
             jRes(res, 200, isUser)
@@ -46,10 +56,17 @@ router.post("/entryWithGoogleOAuth", [
             name : req.body.name,
             gmailAddress: req.body.gmailAddress,
             profilePhotoUrl : req.body.profilePhotoUrl,
+            lastEntryLocation : req.body.lastEntryLocation,
+            lastEntryPoint : req.body.lastEntryPoint,
             createdAt : new Date().toISOString()
         })
 
         await newUser.save()
+
+        // send notification to admin
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A new user named ${newUser.name} has signed up via google oauth`, `A new user named ${newUser.name} has signed up via google oauth`, "")
+        // send welcome mail to user
+        sendSignUpMail(newUser.name, newUser.gmailAddress)
 
         jRes(res, 200, newUser)
 
@@ -60,11 +77,18 @@ router.post("/entryWithGoogleOAuth", [
 
 router.post("/entryWithPhoneNumber", [
     body('phoneNumber').exists().withMessage("phoneNumber not found").isString().withMessage("phoneNumber should be string"),
+    body('lastEntryLocation').exists().withMessage("lastEntryLocation not found").isObject().withMessage("lastEntryLocation should be string"),
+    body('lastEntryPoint').exists().withMessage("lastEntryPoint not found").isString().withMessage("lastEntryPoint should be string")
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
         
-        const isUser = await UserModel.findOne({ phoneNumber : req.params.phoneNumber })
+        const isUser = await UserModel
+                            .findOneAndUpdate(
+                                { phoneNumber : req.body.phoneNumber },
+                                { lastEntryLocation : req.body.lastEntryLocation, lastEntryPoint : req.body.lastEntryPoint},
+                                { new : true }
+                            )
 
         if(isUser){
             jRes(res, 200, isUser)
@@ -73,10 +97,15 @@ router.post("/entryWithPhoneNumber", [
 
         const newUser = new UserModel({
             phoneNumber : req.body.phoneNumber,
+            lastEntryLocation : req.body.lastEntryLocation,
+            lastEntryPoint : req.body.lastEntryPoint,
             createdAt : new Date().toISOString()
         })
 
         await newUser.save()
+
+        // send notification to admin
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A new user named ${newUser.name} has signed up via phone number`, `A new user named ${newUser.name} has signed up via phone number`, "")
 
         jRes(res, 200, newUser)
 
@@ -104,13 +133,17 @@ router.post("/addGoogleOAuth", [
             return;
         }
 
+        
         const updatedUser = await UserModel.findOneAndUpdate(
         {
             _id : req.body.userId
-        },{
+        },
+        {
             gmailAddress: req.body.gmailAddress,
-            profilePhotoUrl : req.body.profilePhotoUrl
-        }, {
+            profilePhotoUrl : req.body.profilePhotoUrl,
+            
+        }, 
+        {
             new : true
         })
 
@@ -118,7 +151,7 @@ router.post("/addGoogleOAuth", [
             jRes(res, 400, "no user with this id present")
             return;
         }
-
+        
         jRes(res, 200, updatedUser)
 
     }catch(err){
@@ -147,9 +180,11 @@ router.post("/addPhoneNumber", [
         const updatedUser = await UserModel.findOneAndUpdate(
         {
             _id : req.body.userId
-        },{
+        },
+        {
             phoneNumber : req.body.phoneNumber
-        }, {
+        }, 
+        {
             new : true
         })
 
@@ -175,9 +210,11 @@ router.post("/upsertName", [
         const updatedUser = await UserModel.findOneAndUpdate(
         {
             _id : req.body.userId
-        },{
+        },
+        {
             name : req.body.name
-        }, {
+        }, 
+        {
             new : true
         })
 
@@ -185,7 +222,7 @@ router.post("/upsertName", [
             jRes(res, 400, "no user with this id present")
             return;
         }
-
+        
         jRes(res, 200, updatedUser)
 
     }catch(err){
@@ -193,7 +230,7 @@ router.post("/upsertName", [
     }
 })
 
-router.post("/addUpdateBio",[
+router.post("/upsertBio",[
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
@@ -210,6 +247,7 @@ router.post("/addUpdateBio",[
             return
         }
 
+        // send notification to admin
         jRes(res, 200, updatedUser)
 
     }catch(err){
@@ -298,7 +336,7 @@ router.get("/getAllSessionsBookedYet/:userId", [
         let privateSessionsBooked = isUser.privateSessionsBooked?isUser.privateSessionsBooked:[]
         let groupSessionsBooked = isUser.groupSessionsBooked?isUser.groupSessionsBooked:{}
 
-        jRes(res, 200, { privateSessions,  groupSessionsBooked})
+        jRes(res, 200, { privateSessionsBooked,  groupSessionsBooked})
 
     }catch(err){
         console.log(err)

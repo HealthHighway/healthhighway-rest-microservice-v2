@@ -3,7 +3,8 @@ import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
 import {FcmTokenModel} from "../models/schema/fcmToken.schema.js"
-import {sendNotification} from "../utils/notification.util.js"
+import {sendNotification, sendNotificationViaSubscribedChannel} from "../utils/notification.util.js"
+import { fcmSubscribedChannels } from "../config/server.config.js";
 
 var router = express.Router();
 
@@ -11,78 +12,21 @@ router.get('/', function (req, res) {
     res.send('Welcome to FcmToken Home Route')
 })
 
-router.post("/", [
-    body('page').exists().withMessage("page not found").isNumeric().withMessage('invalid page type'),
-    body('limit').exists().withMessage("limit not found").isNumeric().withMessage('invalid limit type')
-], checkRequestValidationMiddleware, async (req, res) => {
-
-    try {
-
-        let {page, limit} = req.body
-        page = Number(page)
-        limit = Number(limit)
-
-        const fcmTokens = await FcmTokenModel
-                                .find()
-                                .sort({ createdAt : -1 })
-                                .skip( limit * (page-1) )
-                                .limit(limit)
-                                .populate("userId")
-
-        jRes(res, 200, fcmTokens)
-
-    }catch(err){
-        jRes(res, 400, err)
-    }
-
-})
-
-router.post("/addFcmToken", [
+router.post("/upsertFcmToken", [
     body('fcmToken').exists().withMessage("fcmToken not found").isString().withMessage("fcmToken should be string"),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
 
-        const isFcmToken = await FcmTokenModel.findOne({ fcmToken : req.body.fcmToken })
+        const upsertedFcmToken = await FcmTokenModel
+                                        .findOneAndUpdate(
+                                            { fcmToken : req.body.fcmToken },
+                                            { fcmToken : req.body.fcmToken, userId : req.body.userId, lastUpdatedAt : new Date().toISOString() },
+                                            { new : true, upsert : true }
+                                        )
         
-        if(isFcmToken){
-            jRes(res, 400, "this fcmToken already present")
-            return;
-        }
+        jRes(res, 200, upsertedFcmToken)
 
-        const newFcmToken = new FcmTokenModel({
-            fcmToken : req.body.fcmToken,
-            createdAt : new Date().toISOString(),
-            lastUpdatedAt : new Date().toISOString()
-        })
-
-        jRes(res, 200, newFcmToken)
-    }catch(err){
-        jRes(res, 400, err)
-    }
-
-})
-
-router.post("/updateFcmToken", [
-    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
-    body('fcmToken').exists().withMessage("fcmToken not found").isString().withMessage("fcmToken should be string"),
-], checkRequestValidationMiddleware, async (req, res) => {
-
-    try{
-
-        const updatedFcmToken = await FcmTokenModel.findOneAndUpdate({ fcmToken : req.body.fcmToken }, { userId : req.body.userId, lastUpdatedAt : new Date().toISOString() }).populate("userId")
-
-        if(!updatedFcmToken){
-            jRes(res, 400, "no such fcmToken present")
-            return;
-        }
-
-        if(!updatedFcmToken.userId){
-            jRes(res, 400, "no such userId present")
-            return;
-        }
-
-        jRes(res, 200, updatedFcmToken)
     }catch(err){
         jRes(res, 400, err)
     }
@@ -123,7 +67,7 @@ router.post("/sendNotificationToAll", [
 
     try{
 
-        const fcmTokens = await FcmTokenModel.find({}, { _id : 0 })
+        const fcmTokens = await FcmTokenModel.find().lean()
         const tokens = fcmTokens.map(obj => obj.fcmToken)
         while(tokens.length > 0){
             let splicedSection = tokens.splice(100)
@@ -175,7 +119,7 @@ router.post("/sendPersonalizedNotification",[
 router.post("/sendBatchNotifications", [
     body('fcmTokens').exists().withMessage("fcmTokens not found").isArray().withMessage("invalid fcmTokens"),
     body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
-    body('body').exists().withMessage("body not found").isString().withMessage("body should be string"),
+    body('body').exists().withMessage("body not found").isString().withMessage("body should be string")
 ], checkRequestValidationMiddleware, (req, res) => {
 
     try{
@@ -189,6 +133,22 @@ router.post("/sendBatchNotifications", [
         
         jRes(res, 200, {notificationSent : true})
 
+    }catch(err){
+        jRes(res, 400, err)
+    }
+
+})
+
+router.post("/sendNotificationToAdmin", [
+    body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
+    body('body').exists().withMessage("body not found").isString().withMessage("body should be string")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, req.body.title, req.body.body, "")
+        jRes(res, 200, "Notification sent to Admin")
+        
     }catch(err){
         jRes(res, 400, err)
     }

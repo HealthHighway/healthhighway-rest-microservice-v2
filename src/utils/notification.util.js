@@ -1,5 +1,8 @@
-
+import { google } from "googleapis";
+import axios from "axios";
 import admin from "firebase-admin";
+
+import key from "../config/firebase.config.json";
 
 export const sendNotification = (fcmTokens, title, body, android_channel_id, badge) => {
     admin.messaging().sendToDevice(
@@ -13,4 +16,54 @@ export const sendNotification = (fcmTokens, title, body, android_channel_id, bad
     .catch((error) => {
         console.log(error)
     })
+}
+
+
+
+export const sendNotificationViaSubscribedChannel = (channel, title, body, image) => {
+    const jwtClient = new google.auth.JWT(
+        key.client_email,
+        null,
+        key.private_key,
+        ["https://www.googleapis.com/auth/firebase.messaging"],
+        null
+    )
+    try{
+        jwtClient.authorize(async (err, tokens) => {
+            if(err)
+            {
+                console.log(err) ;
+            }else
+            {
+                const access_token = tokens.access_token;
+                const data =  {
+                    "message": {
+                      "topic": channel,
+                      "notification": {
+                        "title": title,
+                        "body": body,
+                        "image" : image
+                      }
+                    }
+                  }
+                  try{
+                    await axios({
+                        method : "POST",
+                        url : "https://fcm.googleapis.com/v1/projects/healthhighway-45963/messages:send",
+                        headers : {
+                            "Content-Type" : "application/json",
+                            "Authorization" : "Bearer "+ access_token
+                        },
+                        data : JSON.stringify(data)
+                    })
+                }catch(err)
+                {
+                    console.log(err);
+                }
+            }
+        })
+    }catch(err)
+    {
+        console.log(err);
+    }
 }

@@ -6,9 +6,9 @@ export const fcmTokenSchema = new mongoose.Schema({
     userId : { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
     createdAt : { type : Date, index : true },
     lastUpdatedAt : { type : Date, index : true },
-    lastNotificationSendAt : { type : Date, index : true },
+    lastNotificationSentAt : { type : Date, index : true },
     lastNotificationClickedAt : { type : Date, index : true },
-    notificationsSent : { type : [String] },
+    notificationSentTillDate : { type : [String] },
     userSegment : { type : String }
 })
 
