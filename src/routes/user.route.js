@@ -377,17 +377,16 @@ router.post('/admin', [
 
     try{
 
-        // dhsajkdhajksfhjkd
-        // let {page, limit} = req.body
-        // page = Number(page)
-        // limit = Number(limit)
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
 
-        // const users = await UserModel
-        //                     .find({})
-        //                     .sort({ createdAt : -1 })
-        //                     .skip( limit * (page-1) )
-        //                     .limit(limit)
-        //                     .lean()
+        const users = await UserModel
+                            .find({})
+                            .sort({ createdAt : -1 })
+                            .skip( limit * (page-1) )
+                            .limit(limit)
+                            .lean()
 
         jRes(res, 200, users)
 
