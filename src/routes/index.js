@@ -1,5 +1,6 @@
 import express from "express";
 
+import appVersion from "./appVersion.route.js"
 import author from './author.route.js'
 import banner from './banner.route.js'
 import blog from "./blog.route.js"
@@ -23,6 +24,7 @@ import filter from './blogFilter.route.js'
 
 const apiRoutes = express.Router()
 
+apiRoutes.use("/appVersion", appVersion)
 apiRoutes.use("/author", author)
 apiRoutes.use("/banner", banner)
 apiRoutes.use("/blog", blog)

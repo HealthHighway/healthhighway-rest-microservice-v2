@@ -7,7 +7,7 @@ export const blogSchema = new mongoose.Schema({
     thumbnailImage : { type : String },
     author : { type : String },
     authorImage : { type : String },
-    categoryKeywords : { type : [String] },
+    categoryKeywords : { type : [String], index : true },
     createdAt : {type : Date, index : true},
     path : {type : String, index : true},
     likes : { type : Number },

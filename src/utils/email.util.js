@@ -5,7 +5,7 @@ import { getFreeGroupSessionBookingMail } from '../templates/email/freeGroupSess
 import { getPaidGroupSessionBookingMail } from '../templates/email/paidGroupSessionBooking.js';
 import { getPaidPrivateSessionBookingMail } from "../templates/email/paidPrivateSessionBooking.js";
 
-const { url, owner_id, token, smtp_user_name, from_email, from_name } = sendClean;
+const { url, ownerId, token, smtp_user_name, from_email, from_name } = sendClean;
 
 export const sendSignUpMail = (c_name, c_email) => {
     let signUpMail;
@@ -55,7 +55,7 @@ const mailRequestHelper = (htmlContent, subject, c_name, c_email) => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         data : {
-            "owner_id": owner_id,
+            "owner_id": ownerId,
             "token": token,
             "smtp_user_name": smtp_user_name,
             "message": {

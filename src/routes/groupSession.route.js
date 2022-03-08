@@ -78,7 +78,7 @@ router.post("/", [
             if(isGroupSessionThumbnailWithProperDimensions){
                 
                 let fileName = `${getRandomFileName()}_${req.files.groupSessionThumbnail.name}`
-                const uploadedUrl = await uploadFileStreamOnS3(req.files.groupSessionThumbnail.data, `images/group-sessions/${fileName}`)
+                const uploadedUrl = await uploadFileStreamOnS3(req.files.groupSessionThumbnail.data, `group-sessions/images/${fileName}`)
         
                 const isTrainer = await TrainerModel.findOne({ _id : req.body.trainerId });
 

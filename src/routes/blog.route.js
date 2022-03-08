@@ -6,7 +6,7 @@ import {BlogModel} from "../models/schema/blog.schema.js"
 import {AuthorModel} from "../models/schema/author.schema.js"
 import {UserModel} from "../models/schema/user.schema.js"
 import { getBlogPath } from "../utils/blog.util.js";
-import { uploadRecursively } from "../utils/upload.util.js";
+import { truncate, uploadRecursively } from "../utils/upload.util.js";
 import sizeOf from 'buffer-image-size'
 
 var router = express.Router();
@@ -21,7 +21,7 @@ router.get("/:blogId", [
     
     try
     {
-        const blog = await BlogModel.findOne({ path : req.params.blogId })
+        const blog = await BlogModel.findOne({ _id : req.params.blogId })
 
         const suggestions = await BlogModel.aggregate([
             { $match : { _id : { $ne : req.params.blogId } } },
@@ -236,7 +236,8 @@ router.post("/uploadImagesOnS3", [
                 let width = sizeOf(data.data).width
                 let height = sizeOf(data.data).height
 
-                if(width < 1920 || height < 1080 || (width*9 != height*16)){
+                console.log(width, height)
+                if(width < 600 || truncate(width/height, 1) != 1.7){
                     isAllWithProperDimensions = false
                 }
 

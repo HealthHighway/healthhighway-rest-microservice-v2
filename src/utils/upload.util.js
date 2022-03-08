@@ -83,7 +83,7 @@ export async function uploadRecursively(data, currIndex, listContainingUploadedI
         return listContainingUploadedImages
     }else{
         let fileName = `${getRandomFileName()}_${data[currIndex].name}`
-        const uploadedUrl = await uploadFileStreamOnS3(data[currIndex].data, `images/blogs/${path}_${newBlogId}/${fileName}`);
+        const uploadedUrl = await uploadFileStreamOnS3(data[currIndex].data, `blogs/images/${path}_${newBlogId}/${fileName}`);
         listContainingUploadedImages.push(uploadedUrl);
         await uploadRecursively(data, currIndex+1, listContainingUploadedImages, path, newBlogId);
     }
@@ -100,4 +100,8 @@ export function getFileNameFromPath(input)
     }
 
     return modifiedName.substring(modifiedName.lastIndexOf('/') + 1, modifiedName.length)
+}
+
+export function truncate (num, places) {
+    return Math.trunc(num * Math.pow(10, places)) / Math.pow(10, places);
 }

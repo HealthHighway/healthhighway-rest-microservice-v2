@@ -6,6 +6,7 @@ import {UserModel} from "../models/schema/user.schema.js"
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js"
 import { fcmSubscribedChannels } from "../config/server.config.js"
 import { sendSignUpMail } from "../utils/email.util.js"
+import { pricingPlans } from "../constants/price.constant.js"
 
 var router = express.Router();
 
@@ -118,6 +119,7 @@ router.post("/addGoogleOAuth", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('gmailAddress').exists().withMessage("gmailAddress not found").isString().withMessage("gmailAddress should be string"),
     body('profilePhotoUrl').exists().withMessage("profilePhotoUrl not found").isString().withMessage("profilePhotoUrl should be string"),
+    body('name').exists().withMessage("name not found").isString().withMessage("name should be string"),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
@@ -141,7 +143,7 @@ router.post("/addGoogleOAuth", [
         {
             gmailAddress: req.body.gmailAddress,
             profilePhotoUrl : req.body.profilePhotoUrl,
-            
+            name : req.body.name
         }, 
         {
             new : true
@@ -272,8 +274,8 @@ router.get("/getAllUpcomingSessions/:userId", [
             return
         }
 
-        const privateSessionsBooked = user.privateSessionsBooked;
-        const groupSessionsBooked = user.groupSessionsBooked;
+        const privateSessionsBooked = isUser.privateSessionsBooked;
+        const groupSessionsBooked = isUser.groupSessionsBooked;
 
         let scheduledPrivateSessions = []
         let scheduledGroupSessions = []
@@ -395,5 +397,23 @@ router.post('/admin', [
     }
 })
 
+router.post("/privateSessionPlans", [
+    body('country').exists().withMessage("country not found").isString().withMessage('invalid country type'),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try {
+
+        let { country } = req.body
+        if(country && pricingPlans[country]){
+            jRes(res, 200, pricingPlans[country])
+        }else{
+            jRes(res, 200, pricingPlans["DEFAULT_COUNTRY"])
+        }
+
+    }catch(err){
+        jRes(res, 400, err)
+    }
+
+})
 
 export default router;

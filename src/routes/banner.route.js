@@ -44,7 +44,7 @@ router.post("/addBanner", [
             if(isBannerImageWithProperDimensions){
                 
                 let fileName = `${getRandomFileName()}_${req.files.banner.name}`
-                const uploadedUrl = await uploadFileStreamOnS3(req.files.banner.data, `images/banners/${fileName}`)
+                const uploadedUrl = await uploadFileStreamOnS3(req.files.banner.data, `banners/images/${fileName}`)
         
                 const newBanner = new BannerModel({
                     imageUrl : uploadedUrl,
