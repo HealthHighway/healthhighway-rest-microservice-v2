@@ -2,7 +2,7 @@ import express from "express";
 import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
-import { sendSignUpMail, getFreeGroupSessionBookingMail, sendGroupSessionBookingMail, sendPrivateSessionBookingMail } from "../utils/email.util.js";
+import { sendSignUpMail, sendFreeGroupSessionBookingMail, sendGroupSessionBookingMail, sendPrivateSessionBookingMail } from "../utils/email.util.js";
 
 var router = express.Router();
 
@@ -31,7 +31,7 @@ router.post("/getFreeGroupSessionBookingMail", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
-        getFreeGroupSessionBookingMail(req.body.name, req.body.email)
+        sendFreeGroupSessionBookingMail(req.body.name, req.body.email)
         jRes(res, 200, authorToBeAdded)
 
     }catch(err){

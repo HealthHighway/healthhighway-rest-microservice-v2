@@ -6,6 +6,12 @@ import {UserModel} from "../models/schema/user.schema.js"
 import {GroupSessionModel} from "../models/schema/groupSession.schema.js"
 import {TrainerModel} from "../models/schema/trainer.schema.js"
 import short from 'short-uuid'
+import sizeOf from 'buffer-image-size'
+import { getRandomFileName, uploadFileStreamOnS3 } from "../utils/upload.util.js"
+import { giveDates } from "../utils/calendat.util.js";
+import { sendFreeGroupSessionBookingMail, sendGroupSessionBookingMail } from "../utils/email.util.js";
+import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js";
+import { fcmSubscribedChannels } from "../config/server.config.js";
 
 var router = express.Router();
 
@@ -43,7 +49,6 @@ router.get("/isThisGroupAlreadyBooked/:groupSessionId/:userId", [
 router.post("/", [
     body('trainerId').exists().withMessage("trainerId not found").isMongoId().withMessage("invalid trainerId"),
     body('tile').exists().withMessage("tile not found").isString().withMessage("invalid tile"),
-    body('thumbnailImage').exists().withMessage("thumbnailImage not found").isString().withMessage("invalid thumbnailImage"),
     body('limitOfAttendies').exists().withMessage("limitOfAttendies not found").isNumeric().withMessage("invalid limitOfAttendies"),
     body('description').exists().withMessage("description not found").isString().withMessage("invalid description"),
     body('advisaryListForSession').exists().withMessage("advisaryListForSession not found").isArray().withMessage("invalid advisaryListForSession"),
@@ -59,22 +64,49 @@ router.post("/", [
 
     try{
 
-        const isTrainer = await TrainerModel.findOne({ _id : req.body.trainerId });
+        if(req.files && req.files.groupSessionThumbnail){
 
-        if(!isTrainer){
-            jRes(res, 400, "No such trainer exists")
-            return;
+            let isGroupSessionThumbnailWithProperDimensions = true
+
+            let width = sizeOf(req.files.groupSessionThumbnail.data).width
+            let height = sizeOf(req.files.groupSessionThumbnail.data).height
+
+            if(width < 1920 || height < 1080 || (width*9 != height*16)){
+                isGroupSessionThumbnailWithProperDimensions = false
+            }
+
+            if(isGroupSessionThumbnailWithProperDimensions){
+                
+                let fileName = `${getRandomFileName()}_${req.files.groupSessionThumbnail.name}`
+                const uploadedUrl = await uploadFileStreamOnS3(req.files.groupSessionThumbnail.data, `images/group-sessions/${fileName}`)
+        
+                const isTrainer = await TrainerModel.findOne({ _id : req.body.trainerId });
+
+                if(!isTrainer){
+                    jRes(res, 400, "No such trainer exists")
+                    return;
+                }
+
+                const newSession = new GroupSessionModel({
+                    ...req.body,
+                    trainerName : isTrainer.name,
+                    thumbnailImage : uploadedUrl
+                })
+
+                await newSession.save()
+
+                jRes(res, 200, newSession)
+                
+            }
+            else{
+                jRes(res, 400, "image(s) not with advised dimensions")
+            }
+
+        }else{
+            jRes(res, 400, "req.files.groupSessionThumbnail should be present")
         }
 
-        const newSession = new GroupSessionModel({
-            ...req.body,
-            trainerName : isTrainer.name,
-            videoCallChannelId : short.generate()
-        })
-
-        await newSession.save()
-
-        jRes(res, 200, newSession)
+        
 
     }catch(err){
         jRes(res, 400, err)
@@ -158,6 +190,78 @@ router.get("/admin/getAllUsersEnrolled/:groupSessionId", [
         jRes(res, 400, err);
     }
     
+})
+
+router.post("/bookGroupSession", [
+    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+    body('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
+    body('sessionCount').exists().withMessage("sessionCount not found").isNumeric().withMessage("invalid sessionCount"),
+    body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
+    body('days').exists().withMessage("days not found").isArray().withMessage("invalid days"),
+    body('timeIn24HrFormat').exists().withMessage("timeIn24HrFormat not found").isString().withMessage("invalid timeIn24HrFormat"),
+    body('timeZone').exists().withMessage("timeZone not found").isString().withMessage("invalid timeZone"),
+    body('frontEndOffset').exists().withMessage("frontEndOffset not found").isNumeric().withMessage("invalid frontEndOffset")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const { userId, groupSessionId, sessionCount, startingDate, date, timeIn24HrFormat, timeZone, frontEndOffset, days
+        } = req.body
+
+        const isGroupSession = GroupSessionModel.findOne({ _id : groupSessionId })
+
+        if(!isGroupSession){
+            jRes(res, 400, "No Such Group Session exists")
+            return
+        }
+
+        const isUser = await UserModel.findOne({ _id : userId })
+
+        if(!isUser){
+            jRes(res, 400, "No Such user exists")
+            return
+        }
+
+        const schedule = giveDates(days, startingDate, timeIn24HrFormat, sessionCount, timeZone, frontEndOffset)
+
+        if(isUser.groupSessionsBooked){
+            if(isUser.groupSessionsBooked.get(groupSessionId) == null){
+                isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
+                isUser.freeSessionsAvailed = isUser.freeSessionsAvailed + 1
+                if(isUser.gmailAddress){
+                    sendFreeGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
+                }
+                sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Free Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
+
+            }else{
+                const { pastCalendar } = isUser.groupSessionsBooked.get(groupSessionId)
+                schedule.forEach(sch => {
+                    pastCalendar.push(sch)
+                })
+                isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : pastCalendar } )
+                await GroupSessionModel.findOneAndUpdate({_id: groupSessionId}, { $inc: { currentAttendies : 1 }}, { new:true })
+                if(isUser.gmailAddress){
+                    sendGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
+                }
+                sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Paid Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
+            }
+        }else{
+            isUser.groupSessionsBooked = {}
+            isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
+            isUser.freeSessionsAvailed = isUser.freeSessionsAvailed + 1
+            if(isUser.gmailAddress){
+                sendFreeGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
+            }
+            sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Free Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
+        }
+
+        const updatedUser = await isUser.save()
+
+        jRes(res, 200, updatedUser)
+
+    }catch(err){
+        jRes(res, 400, err)
+    }
 })
 
 export default router;

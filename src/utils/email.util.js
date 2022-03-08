@@ -14,10 +14,10 @@ export const sendSignUpMail = (c_name, c_email) => {
     }else{
         signUpMail = getSignUpMail(c_name.split(' ')[0], c_name.split(' ').length==1?"":c_name.split(' ')[1])
     }
-    mailRequestHelper(signUpMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Let's begin your journey with Health Highway`)
+    mailRequestHelper(signUpMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Let's begin your journey with Health Highway`, c_name, c_email)
 }
 
-export const getFreeGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
+export const sendFreeGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
     let td = new Date();
     let freeSessionBookingMail;
     if(c_name == ""){
@@ -25,7 +25,7 @@ export const getFreeGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
     }else{
         freeSessionBookingMail = getFreeGroupSessionBookingMail(c_name.split(' ')[0], c_name.split(' ').length==1?"":c_name.split(' ')[1], td.toString(), ssn_name);
     }
-    mailRequestHelper(freeSessionBookingMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Your Trial Group Session has been booked`)
+    mailRequestHelper(freeSessionBookingMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Your Trial Group Session has been booked`, c_name, c_email)
 }
 
 export const sendGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
@@ -36,7 +36,7 @@ export const sendGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
     }else{
         groupSessionBookingMail = getPaidGroupSessionBookingMail(c_name.split(' ')[0], c_name.split(' ').length==1?"":c_name.split(' ')[1], td.toString(), ssn_name)
     }
-    mailRequestHelper(groupSessionBookingMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Your Group Session has been booked`)
+    mailRequestHelper(groupSessionBookingMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Your Group Session has been booked`, c_name, c_email)
 }
 
 export const sendPrivateSessionBookingMail = (c_name, c_email, ssn_name) => {
@@ -46,10 +46,10 @@ export const sendPrivateSessionBookingMail = (c_name, c_email, ssn_name) => {
     }else{
         privateSessionBookingMail = getPaidPrivateSessionBookingMail(c_name.split(' ')[0], c_name.split(' ').length==1?"":c_name.split(' ')[1], td.toString(), ssn_name);
     }
-    mailRequestHelper(privateSessionBookingMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Your Personal Session has been successfully booked`)
+    mailRequestHelper(privateSessionBookingMail, `Welcome ${c_name!=''?c_name:"Yogi"}, Your Personal Session has been successfully booked`, c_name, c_email)
 }
 
-const mailRequestHelper = (htmlContent, subject) => {
+const mailRequestHelper = (htmlContent, subject, c_name, c_email) => {
     axios({
         url,
         method: 'POST',
