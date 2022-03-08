@@ -1,7 +1,7 @@
 import express from "express";
 import { body, param } from "express-validator";
-import { jRes } from "../utils/response.js";
-import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
+import { jRes } from "../utils/response.util.js";
+import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js";
 import {BannerModel} from "../models/schema/banner.schema.js"
 import sizeOf from 'buffer-image-size'
 import { getRandomFileName, uploadFileStreamOnS3 } from "../utils/upload.util.js"

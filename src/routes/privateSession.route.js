@@ -1,7 +1,7 @@
 import express from "express";
 import { body, param } from "express-validator";
-import { jRes } from "../utils/response.js";
-import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
+import { jRes } from "../utils/response.util.js";
+import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js";
 import {PrivateSessionModel} from "../models/schema/privateSession.schema.js"
 import { giveDates } from "../utils/calendat.util.js";
 import short from 'short-uuid'

@@ -1,7 +1,7 @@
 import express from "express";
 import { body, param } from "express-validator";
-import { jRes } from "../utils/response.js";
-import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
+import { jRes } from "../utils/response.util.js";
+import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js";
 import {BlogModel} from "../models/schema/blog.schema.js"
 import {AuthorModel} from "../models/schema/author.schema.js"
 import {UserModel} from "../models/schema/user.schema.js"

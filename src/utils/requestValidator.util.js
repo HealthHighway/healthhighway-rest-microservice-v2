@@ -1,4 +1,4 @@
-import { jRes } from './response.js';
+import { jRes } from './response.util.js';
 import { validationResult } from 'express-validator';
 
 export const checkRequestValidationMiddleware = (req, res, next) => {
