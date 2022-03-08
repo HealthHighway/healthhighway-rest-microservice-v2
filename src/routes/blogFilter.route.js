@@ -17,8 +17,7 @@ router.post("/", [
 
     try{
 
-        const isFilterPresent = await BlogFilterModel({ abbr : req.body.abbr })
-
+        const isFilterPresent = await BlogFilterModel.findOne({ abbr : req.body.abbr })
         if(isFilterPresent){
             jRes(res, 400, "This filter is already present")
             return
@@ -35,7 +34,7 @@ router.post("/", [
     }
 })
 
-router.get("/", async (req, res) => {
+router.get("/getAllBlogFilters", async (req, res) => {
 
     try {
 

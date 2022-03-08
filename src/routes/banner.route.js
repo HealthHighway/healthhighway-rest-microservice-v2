@@ -16,7 +16,7 @@ router.get("/getAll", async (req, res) => {
 
     try{
 
-        const banners = await BannerModel.find();
+        const banners = await BannerModel.find()
         jRes(res, 200, banners)
 
     }catch(err){
@@ -37,7 +37,7 @@ router.post("/addBanner", [
             let width = sizeOf(req.files.banner.data).width
             let height = sizeOf(req.files.banner.data).height
 
-            if(width < 1920 || height < 1080 || (width*9 != height*16)){
+            if(width < 500){
                 isBannerImageWithProperDimensions = false
             }
 
@@ -55,8 +55,7 @@ router.post("/addBanner", [
 
                 jRes(res, 200, newBanner)
                 
-            }
-            else{
+            }else{
                 jRes(res, 400, "image(s) not with advised dimensions")
             }
 

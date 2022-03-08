@@ -18,12 +18,14 @@ router.post("/", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
-        await CallbackModel.insertOne({ ...req.body, createdAt : new Date().toISOString() })
+        
+        await CallbackModel.create({ ...req.body, createdAt : new Date().toISOString() })
 
         sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `Callback Scheduled`, `A user named ${req.body.name} has scheduled a callback`, "")
 
         jRes(res, 200, "Callback Scheduled")
     }catch(err){
+        console.log(err)
         jRes(res, 400, err)
     }
 })

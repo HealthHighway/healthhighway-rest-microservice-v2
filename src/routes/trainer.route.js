@@ -27,7 +27,7 @@ router.get("/:trainerId", [
 
 })
 
-router.post("/:page/:limit",[
+router.post("/", [
     body('page').exists().withMessage("page not found").isNumeric().withMessage("page should be string"),
     body('limit').exists().withMessage("limit not found").isNumeric().withMessage("limit should be string")
 ], checkRequestValidationMiddleware, async (req, res) => {
@@ -58,7 +58,7 @@ router.post("/entryWithPhoneNumber",[
 
     try{
 
-        const isTrainer = await TrainerModel.findOne({ phoneNumber : req.params.phoneNumber })
+        const isTrainer = await TrainerModel.findOne({ phoneNumber : req.body.phoneNumber })
 
         if(isTrainer){
             jRes(res, 200, isTrainer)

@@ -41,6 +41,7 @@ export const sendGroupSessionBookingMail = (c_name, c_email, ssn_name) => {
 
 export const sendPrivateSessionBookingMail = (c_name, c_email, ssn_name) => {
     let td = new Date();
+    let privateSessionBookingMail;
     if(c_name == ''){
         privateSessionBookingMail = getPaidPrivateSessionBookingMail("Dear", "Yogi", td.toString(), ssn_name);
     }else{

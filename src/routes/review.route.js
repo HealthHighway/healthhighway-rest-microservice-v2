@@ -18,7 +18,8 @@ router.post("/", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
-        await ReviewModel.insertOne({ ...req.body, createdAt : new Date().toISOString() })
+
+        await ReviewModel.create({ ...req.body, createdAt : new Date().toISOString() })
 
         sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `Review Posted`, `A user has posted a review`, "")
 
@@ -28,7 +29,7 @@ router.post("/", [
     }
 })
 
-router.post("/", [
+router.post("/allReviews", [
     body('page').exists().withMessage("page not found").isNumeric().withMessage('invalid page type'),
     body('limit').exists().withMessage("limit not found").isNumeric().withMessage('invalid limit type')
 ], checkRequestValidationMiddleware, async (req, res) => {

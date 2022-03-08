@@ -12,7 +12,7 @@ router.get('/', function (req, res) {
     res.send('Welcome to Curate Home Route')
 })
 
-router.post("/:userId", [
+router.post("/", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('title').exists().withMessage("title not found").isString().withMessage("title should be string"),
     body('description').exists().withMessage("description not found").isString().withMessage("description should be string"),

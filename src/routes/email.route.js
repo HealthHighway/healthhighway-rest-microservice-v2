@@ -17,22 +17,23 @@ router.post("/sendSignUpMail", [
 
     try {
         sendSignUpMail(req.body.name, req.body.email)
-        jRes(res, 200, authorToBeAdded)
+        jRes(res, 200, "Mail Queued")
 
     }catch(err){
+        console.log
         jRes(res, 400, err)
     }
 
 })
 
-router.post("/getFreeGroupSessionBookingMail", [
+router.post("/sendFreeGroupSessionBookingMail", [
     body('name').exists().withMessage("name not found").isString().withMessage('invalid name type'),
     body('email').exists().withMessage("email not found").isString().withMessage('invalid email type'),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
         sendFreeGroupSessionBookingMail(req.body.name, req.body.email)
-        jRes(res, 200, authorToBeAdded)
+        jRes(res, 200, "Mail Queued")
 
     }catch(err){
         jRes(res, 400, err)
@@ -46,7 +47,7 @@ router.post("/sendGroupSessionBookingMail", [
 
     try {
         sendGroupSessionBookingMail(req.body.name, req.body.email)
-        jRes(res, 200, authorToBeAdded)
+        jRes(res, 200, "Mail Queued")
 
     }catch(err){
         jRes(res, 400, err)
@@ -60,7 +61,7 @@ router.post("/sendPrivateSessionBookingMail", [
 
     try {
         sendPrivateSessionBookingMail(req.body.name, req.body.email)
-        jRes(res, 200, authorToBeAdded)
+        jRes(res, 200, "Mail Queued")
 
     }catch(err){
         jRes(res, 400, err)
