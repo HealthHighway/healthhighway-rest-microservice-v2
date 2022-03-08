@@ -120,7 +120,7 @@ router.post("/sendBatchNotifications", [
     body('fcmTokens').exists().withMessage("fcmTokens not found").isArray().withMessage("invalid fcmTokens"),
     body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
     body('body').exists().withMessage("body not found").isString().withMessage("body should be string")
-], checkRequestValidationMiddleware, (req, res) => {
+], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
 

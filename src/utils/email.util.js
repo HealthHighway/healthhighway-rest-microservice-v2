@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { sendClean } from "../config/server.config"
+import { sendClean } from "../config/server.config.js"
 import { getSignUpMail } from '../templates/email/signup.js';
 import { getFreeGroupSessionBookingMail } from '../templates/email/freeGroupSessionBooking.js';
 import { getPaidGroupSessionBookingMail } from '../templates/email/paidGroupSessionBooking.js';

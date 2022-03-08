@@ -1,4 +1,4 @@
-{
+export const firebaseConfig = {
     "type": "service_account",
     "project_id": "healthhighway-45963",
     "private_key_id": "e180a29fdeb4e43bdb159718f8e23a384b4c8d8a",
@@ -9,5 +9,5 @@
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-hidy2%40healthhighway-45963.iam.gserviceaccount.com"
-  }
+}
   

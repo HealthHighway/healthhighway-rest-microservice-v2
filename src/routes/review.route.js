@@ -2,7 +2,7 @@ import express from "express";
 import { body, param } from "express-validator";
 import { jRes } from "../utils/response.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.js";
-import {ReviewModel} from "../models/schema/review.schema"
+import {ReviewModel} from "../models/schema/review.schema.js"
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js";
 import { fcmSubscribedChannels } from "../config/server.config.js";
 

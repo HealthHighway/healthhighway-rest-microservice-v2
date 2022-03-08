@@ -2,7 +2,7 @@ import { google } from "googleapis";
 import axios from "axios";
 import admin from "firebase-admin";
 
-import key from "../config/firebase.config.json";
+import {firebaseConfig} from "../config/firebase.config.js";
 
 export const sendNotification = (fcmTokens, title, body, android_channel_id, badge) => {
     admin.messaging().sendToDevice(
@@ -22,9 +22,9 @@ export const sendNotification = (fcmTokens, title, body, android_channel_id, bad
 
 export const sendNotificationViaSubscribedChannel = (channel, title, body, image) => {
     const jwtClient = new google.auth.JWT(
-        key.client_email,
+        firebaseConfig.client_email,
         null,
-        key.private_key,
+        firebaseConfig.private_key,
         ["https://www.googleapis.com/auth/firebase.messaging"],
         null
     )
