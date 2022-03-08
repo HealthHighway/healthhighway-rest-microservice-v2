@@ -38,14 +38,14 @@ export const sendNotificationViaSubscribedChannel = (channel, title, body, image
                 const access_token = tokens.access_token;
                 const data =  {
                     "message": {
-                      "topic": channel,
-                      "notification": {
-                        "title": title,
-                        "body": body,
-                        "image" : image
-                      }
+                        "topic": channel,
+                        "notification": {
+                            "title": title,
+                            "body": body,
+                            "image" : image
+                        }
                     }
-                  }
+                }
                   try{
                     await axios({
                         method : "POST",
