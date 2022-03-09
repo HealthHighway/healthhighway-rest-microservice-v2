@@ -1,11 +1,15 @@
+import express from "express"
 import { jRes } from "../utils/response.util.js"
-import {UserModel} from '../models/user.model';
+import {UserModel} from '../models/schema/user.schema.js';
 import { sendSignUpMail } from "../utils/email.util.js"
+import { body, param } from "express-validator"
+import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js"
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js"
+import { fcmSubscribedChannels } from "../config/server.config.js"
 
 
 
-export const userController=()=>{
+export const userController=async ()=>{
     [
         body('name').exists().withMessage("name not found").isString().withMessage("name should be string"),
         body('gmailAddress').exists().withMessage("gmailAddress not found").isString().withMessage("gmailAddress should be string"),
