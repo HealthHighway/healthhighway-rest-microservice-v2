@@ -43,7 +43,7 @@ router.post("/addBlog", [
     body('title').exists().withMessage("title not found").isString().withMessage('invalid title type'),
     body('previewText').exists().withMessage("previewText not found").isString().withMessage('invalid previewText type'),
     body('thumbnailImage').exists().withMessage("thumbnailImage not found").isString().withMessage('invalid thumbnailImage type'),
-    body('authorId').exists().withMessage("author not found").isMongoId().withMessage('invalid author type'),
+    body('authorId').exists().withMessage("authorId not found").isMongoId().withMessage('invalid authorId type'),
     body('categoryKeywords').exists().withMessage("categoryKeywords not found").isArray().withMessage('invalid categoryKeywords type'),
     body('htmlContent').exists().withMessage("htmlContent not found").isString().withMessage('invalid htmlContent type'),
     body('createdAt').exists().withMessage("createdAt not found").isString().withMessage('invalid createdAt type'),
@@ -249,7 +249,7 @@ router.post("/uploadImagesOnS3", [
                 let isBlogWithGivenUrlPresent = await BlogModel.findOne({ path })
                 
                 let listContainingUploadedImages = []
-                await uploadRecursively(Object.values(req.files), 0, listContainingUploadedImages, path, _id)
+                await uploadRecursively(Object.values(req.files), 0, listContainingUploadedImages, `blogs/images/${path}_${_id}`)
         
                 jRes(res, 200, { path, _id : _id, isBlogWithGivenUrlPresent : isBlogWithGivenUrlPresent?true:false, listContainingUploadedImages })
             }

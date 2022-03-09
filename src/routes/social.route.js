@@ -9,7 +9,7 @@ import fs from 'fs';
 import AWS from 'aws-sdk';
 import { AwsStorage, TEMP_BASE_PATH } from '../config/server.config.js';
 import getStream from "into-stream";
-import { getFileNameFromPath, getRandomFileName, uploadFileStreamOnS3ForSocial } from "../utils/upload.util.js";
+import { getFileNameFromPath, getRandomFileName, uploadFileStreamOnS3ForSocial, uploadRecursively } from "../utils/upload.util.js";
 import { saveFileInTemp } from "../utils/saveFile.util.js";
 
 var router = express.Router();
@@ -32,50 +32,74 @@ router.get("/:socialId", [
     }
 })
 
-// not completed yet
 router.post("/addSocial", [
     body('_id').exists().withMessage("_id not found").isMongoId().withMessage('invalid _id type'),
-    body('path').exists().withMessage("path not found").isString().withMessage('invalid path type'),
     body('title').exists().withMessage("title not found").isString().withMessage('invalid title type'),
-    body('previewText').exists().withMessage("previewText not found").isString().withMessage('invalid previewText type'),
-    body('thumbnailImage').exists().withMessage("thumbnailImage not found").isString().withMessage('invalid thumbnailImage type'),
-    body('authorId').exists().withMessage("author not found").isMongoId().withMessage('invalid author type'),
+    body('description').exists().withMessage("description not found").isString().withMessage('invalid description type'),
+    body('imageUrls').exists().withMessage("imageUrls not found").isArray().withMessage('invalid imageUrls type'),
+    body('videoUrls').exists().withMessage("videoUrls not found").isArray().withMessage('invalid videoUrls type'),
+    body('socialCategory').exists().withMessage("socialCategory not found").isString().withMessage('invalid socialCategory type'),
     body('categoryKeywords').exists().withMessage("categoryKeywords not found").isArray().withMessage('invalid categoryKeywords type'),
-    body('htmlContent').exists().withMessage("htmlContent not found").isString().withMessage('invalid htmlContent type'),
-    body('createdAt').exists().withMessage("createdAt not found").isString().withMessage('invalid createdAt type'),
+    body('redirectUrl').exists().withMessage("redirectUrl not found").isString().withMessage('invalid redirectUrl type'),
+    body('authorName').exists().withMessage("authorName not found").isString().withMessage('invalid authorName type'),
+    body('authorHandleName').exists().withMessage("authorHandleName not found").isString().withMessage('invalid authorHandleName type'),
+    body('authorHandleUrl').exists().withMessage("authorHandleUrl not found").isString().withMessage('invalid authorHandleUrl type'),
+    body('authorImageUrl').exists().withMessage("authorImageUrl not found").isString().withMessage('invalid authorImageUrl type'),
+    body('createdAt').exists().withMessage("createdAt not found").isDate().withMessage('invalid createdAt type'),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try
     {   
-        // find the corresponding author
-        const author = await AuthorModel.findOne({ _id : req.body.authorId })
 
-        if(author){
+        const isSocial = await SocialModel.findOne({ _id : req.body._id })
 
-            const { name, profilePhotoUrl } = author
-
-            delete req.body.authorId
-
-            const blogToBeInserted = await SocialModel({
-                ...req.body,
-                author : name,
-                authorImage : profilePhotoUrl,
-                likes : Math.ceil(Math.random()*1000 + 1)
-            })
-
-            await blogToBeInserted.save()
-
-            jRes(res, 200, blogToBeInserted)
-
-        }else{
-            jRes(res, 400, "No Such Author Found")
+        if(isSocial){
+            jRes(res, 400, "Social with this _id already present")
+            return
         }
+
+        const socialToBeInserted = await SocialModel({
+            ...req.body,
+            likes : Math.ceil(Math.random()*1000 + 1),
+        })
+
+        await socialToBeInserted.save()
+
+        jRes(res, 200, socialToBeInserted)
 
     }catch(err){
         console.log(err)
         jRes(res, 400, err)
     }
     
+})
+
+router.post("/uploadImagesOnS3", [], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const newSocial = new SocialModel({})
+
+        if(req.files && Object.values(req.files).length > 0){
+            
+            let listContainingUploadedImages = []
+            await uploadRecursively(Object.values(req.files), 0, listContainingUploadedImages, `socials/images/${newSocial._id}`)
+    
+            jRes(res, 200, { _id : newSocial._id, listContainingUploadedImages })
+
+        }else{
+
+            jRes(res, 400, "req.files should be present")
+
+        }
+        
+    }catch(err){
+
+        console.log(err)
+        jRes(res, 400, err)
+
+    }
+
 })
 
 router.post("/", [
@@ -242,41 +266,6 @@ router.post("/toggleHiddenStatus", [
 
     }
 
-})
-
-const s3 = new AWS.S3({
-    accessKeyId: AwsStorage.ACCESS_KEY,
-    secretAccessKey: AwsStorage.SECRET_ACCESS_KEY,
-});
-
-// not completed yet
-router.post("/uploadMediaOnS3", [
-    body('url').exists().withMessage("url not found").isString().withMessage("invalid url type"),
-], checkRequestValidationMiddleware, async (req, res) => {
-
-    try{
-        const fileName = `${getRandomFileName()}_${getFileNameFromPath(req.body.url)}`;
-        const filePath = `${TEMP_BASE_PATH}/${fileName}`;
-    
-        const fileSaved = await saveFileInTemp(req.body.url, filePath)
-        if (fileSaved) 
-        {
-            const s3Path = await uploadFileStreamOnS3ForSocial(filePath, `${fileName}`);
-    
-            console.log("this is a s3Path>>", s3Path)
-            fs.unlink(filePath, function (err)
-            {
-                if (err) {
-                    console.log("error on delete file::", err)
-                    throw new Error("error on delete file")
-                }
-            })
-        }
-    }catch(err){
-        console.log(err)
-    }
-
-    
 })
 
 router.get("/like/:socialId/:userId", [

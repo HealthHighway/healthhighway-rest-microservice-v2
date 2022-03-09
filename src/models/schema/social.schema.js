@@ -6,7 +6,7 @@ export const socialSchema = new mongoose.Schema({
     description : { type : String },
     imageUrls : { type : [String] },
     videoUrls : { type : [{videoUrl : String, thumbnailUrl : String}]},
-    likeCount : { type : Number },
+    likes : { type : Number },
     socialCategory : { type : String, index : true}, // can be "LinkedIn || Instagram || Twitter || Facebook || Blogs",
     redirectUrl : { type : String },
     categoryKeywords : { type : [String] },
@@ -15,7 +15,7 @@ export const socialSchema = new mongoose.Schema({
     authorHandleUrl : { type : String },
     authorImageUrl : { type : String },
     createdAt : { type : Date, index : true },
-    isFeatured : { type : Boolean, index : true },
+    isFeatured : { type : Boolean, index : true, default : false },
     isHidden : { type : Boolean, index : true, default : false }
 }, {
     timestamps: true
