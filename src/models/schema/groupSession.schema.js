@@ -20,7 +20,8 @@ export const groupSessionSchema = new mongoose.Schema({
     timeIn24HrFormat : String,
     minsPerSession : { type : Number, default : 50 },  
     days : { type : [String] },
-    categoryKeywords : { type : [mongoose.Schema.Types.ObjectId], index : true },
+    filters : { type : [mongoose.Schema.Types.ObjectId], index : true, ref: "blog-filters" },
+    keywords : { type : String },
     freeDayCountFromSessionBooking : { type : Number, default : 2 }, // Number of Days from Booking a free trial that a person can take free trials
     startingDate : { type : Date },
     hostOffsetFromGMT : {type : Number, default : 330}, // date offset of place where session is to hosted - date offset of GMT
@@ -29,6 +30,6 @@ export const groupSessionSchema = new mongoose.Schema({
     timestamps: true
 })
 
-groupSessionSchema.index({ title : "text", description : "text", advisaryListForSession : "text", advisaryListAgainstSession : "text", benefits : "text" })
+groupSessionSchema.index({ title : "text", description : "text", advisaryListForSession : "text", advisaryListAgainstSession : "text", benefits : "text", keywords : "text" })
 
 export const GroupSessionModel = mongoose.model('group-sessions', groupSessionSchema)

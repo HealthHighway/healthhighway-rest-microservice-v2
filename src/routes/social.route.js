@@ -4,13 +4,7 @@ import { jRes } from "../utils/response.util.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js";
 import {SocialModel} from "../models/schema/social.schema.js"
 import {UserModel} from "../models/schema/user.schema.js"
-import fetch from 'node-fetch';
-import fs from 'fs';
-import AWS from 'aws-sdk';
-import { AwsStorage, TEMP_BASE_PATH } from '../config/server.config.js';
-import getStream from "into-stream";
-import { getFileNameFromPath, getRandomFileName, uploadFileStreamOnS3ForSocial, uploadRecursively } from "../utils/upload.util.js";
-import { saveFileInTemp } from "../utils/saveFile.util.js";
+import { uploadRecursively } from "../utils/upload.util.js";
 
 var router = express.Router();
 

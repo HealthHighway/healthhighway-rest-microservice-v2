@@ -50,8 +50,14 @@ router.post("/addBlog", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try
-    {   
-        // find the corresponding author
+    {
+        const isBlogWithThisIdPresent = await BlogModel.findOne({ _id : req.body._id })   
+
+        if(isBlogWithThisIdPresent){
+            jRes(res, 200, "Blog with this _id already present");
+            return;
+        }
+
         const author = await AuthorModel.findOne({ _id : req.body.authorId })
 
         if(author){

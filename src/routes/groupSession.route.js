@@ -48,8 +48,9 @@ router.get("/isThisGroupAlreadyBooked/:groupSessionId/:userId", [
 
 router.post("/", [
     body('trainerId').exists().withMessage("trainerId not found").isMongoId().withMessage("invalid trainerId"),
-    body('tile').exists().withMessage("tile not found").isString().withMessage("invalid tile"),
+    body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
     body('limitOfAttendies').exists().withMessage("limitOfAttendies not found").isNumeric().withMessage("invalid limitOfAttendies"),
+    body('currentAttendies').exists().withMessage("currentAttendies not found").isNumeric().withMessage("invalid currentAttendies"),
     body('description').exists().withMessage("description not found").isString().withMessage("invalid description"),
     body('advisaryListForSession').exists().withMessage("advisaryListForSession not found").isArray().withMessage("invalid advisaryListForSession"),
     body('advisaryListAgainstSession').exists().withMessage("advisaryListAgainstSession not found").isArray().withMessage("invalid advisaryListAgainstSession"),
@@ -60,6 +61,8 @@ router.post("/", [
     body('timeIn24HrFormat').exists().withMessage("timeIn24HrFormat not found").isString().withMessage("invalid timeIn24HrFormat"),
     body('days').exists().withMessage("days not found").isArray().withMessage("invalid days"),
     body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
+    body('filters').exists().withMessage("filters not found").isArray().withMessage("invalid filters"),
+    body('keywords').exists().withMessage("keywords not found").isString().withMessage("invalid keywords")
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
@@ -136,6 +139,44 @@ router.post("/", [
 
         const groupSessions = await GroupSessionModel
                                 .find({ $and : mongoQuery })
+                                .sort({ createdAt : -1 })
+                                .skip( limit * (page-1) )
+                                .limit(limit)
+                                .lean()
+
+        jRes(res, 200, groupSessions)
+
+    }catch(err){
+        console.log(err)
+        jRes(res, 400, err);
+    }
+
+})
+
+router.post("/admin", [
+    body('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page type"),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit type"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
+
+        let mongoQuery = [{ $or : [ { showOnPlatform : {$exists : false} }, { showOnPlatform : { $eq : true } } ] }]
+
+        if(req.body.searchQuery){
+            mongoQuery.push({$text: { $search: req.body.searchQuery } })
+        }
+
+        if(req.body.categoryKeywords){
+            mongoQuery.push({ categoryKeywords : { $all : req.body.categoryKeywords } })
+        }
+
+        const groupSessions = await GroupSessionModel
+                                .find({ $and : mongoQuery })
+                                .populate('trainerId').populate('filters')
                                 .sort({ createdAt : -1 })
                                 .skip( limit * (page-1) )
                                 .limit(limit)
@@ -262,6 +303,48 @@ router.post("/bookGroupSession", [
     }catch(err){
         jRes(res, 400, err)
     }
+})
+
+router.post("/update", [
+    body('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
+    body('trainerId').exists().withMessage("trainerId not found").isMongoId().withMessage("invalid trainerId"),
+    body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
+    body('limitOfAttendies').exists().withMessage("limitOfAttendies not found").isNumeric().withMessage("invalid limitOfAttendies"),
+    body('currentAttendies').exists().withMessage("currentAttendies not found").isNumeric().withMessage("invalid currentAttendies"),
+    body('description').exists().withMessage("description not found").isString().withMessage("invalid description"),
+    body('advisaryListForSession').exists().withMessage("advisaryListForSession not found").isArray().withMessage("invalid advisaryListForSession"),
+    body('advisaryListAgainstSession').exists().withMessage("advisaryListAgainstSession not found").isArray().withMessage("invalid advisaryListAgainstSession"),
+    body('benefits').exists().withMessage("benefits not found").isArray().withMessage("invalid benefits"),
+    body('price').exists().withMessage("price not found").isNumeric().withMessage("invalid price"),
+    body('currency').exists().withMessage("currency not found").isString().withMessage("invalid currency"),
+    body('level').exists().withMessage("level not found").isString().withMessage("invalid level"),
+    body('timeIn24HrFormat').exists().withMessage("timeIn24HrFormat not found").isString().withMessage("invalid timeIn24HrFormat"),
+    body('days').exists().withMessage("days not found").isArray().withMessage("invalid days"),
+    body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
+    body('filters').exists().withMessage("filters not found").isArray().withMessage("invalid filters"),
+    body('keywords').exists().withMessage("keywords not found").isString().withMessage("invalid keywords")
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const isGroupSession = await GroupSessionModel.findOne({ _id : req.body.groupSessionId });
+
+        if(!isGroupSession){
+            jRes(res, 400, "No such group session found");
+            return;
+        }
+
+        const updatedGroupSession = await GroupSessionModel.findOneAndUpdate(
+                                                                { _id : req.body.groupSessionId },
+                                                                { ...req.body }
+                                                            )
+        jRes(res, 200, updatedGroupSession)
+
+    }catch(err){
+        console.log(err)
+        jRes(res, 400, err)
+    }
+
 })
 
 export default router;

@@ -7,7 +7,8 @@ export const blogSchema = new mongoose.Schema({
     thumbnailImage : { type : String },
     author : { type : String },
     authorImage : { type : String },
-    categoryKeywords : { type : [String], index : true },
+    filters : { type : [mongoose.Schema.Types.ObjectId], index : true },
+    keywords : { type : String },
     createdAt : {type : Date, index : true},
     path : {type : String, index : true},
     likes : { type : Number },
@@ -17,6 +18,6 @@ export const blogSchema = new mongoose.Schema({
     htmlContent : { type : String }
 })
 
-blogSchema.index({ categoryKeywords : "text", title : "text", previewText : "text" })
+blogSchema.index({ keywords : "text", title : "text", previewText : "text" })
 
 export const BlogModel = mongoose.model('blogs', blogSchema)
