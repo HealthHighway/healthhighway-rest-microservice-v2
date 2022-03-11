@@ -16,6 +16,7 @@ router.post("/sendSignUpMail", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
+
         sendSignUpMail(req.body.name, req.body.email)
         jRes(res, 200, "Mail Queued")
 
@@ -29,10 +30,11 @@ router.post("/sendSignUpMail", [
 router.post("/sendFreeGroupSessionBookingMail", [
     body('name').exists().withMessage("name not found").isString().withMessage('invalid name type'),
     body('email').exists().withMessage("email not found").isString().withMessage('invalid email type'),
+    body('sessionTitle').exists().withMessage("sessionTitle not found").isString().withMessage('invalid sessionTitle type'),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
-        sendFreeGroupSessionBookingMail(req.body.name, req.body.email)
+        sendFreeGroupSessionBookingMail(req.body.name, req.body.email, req.body.sessionTitle)
         jRes(res, 200, "Mail Queued")
 
     }catch(err){
@@ -43,10 +45,11 @@ router.post("/sendFreeGroupSessionBookingMail", [
 router.post("/sendGroupSessionBookingMail", [
     body('name').exists().withMessage("name not found").isString().withMessage('invalid name type'),
     body('email').exists().withMessage("email not found").isString().withMessage('invalid email type'),
+    body('sessionTitle').exists().withMessage("sessionTitle not found").isString().withMessage('invalid sessionTitle type'),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
-        sendGroupSessionBookingMail(req.body.name, req.body.email)
+        sendGroupSessionBookingMail(req.body.name, req.body.email, req.body.sessionTitle)
         jRes(res, 200, "Mail Queued")
 
     }catch(err){
@@ -57,10 +60,11 @@ router.post("/sendGroupSessionBookingMail", [
 router.post("/sendPrivateSessionBookingMail", [
     body('name').exists().withMessage("name not found").isString().withMessage('invalid name type'),
     body('email').exists().withMessage("email not found").isString().withMessage('invalid email type'),
+    body('sessionTitle').exists().withMessage("sessionTitle not found").isString().withMessage('invalid sessionTitle type'),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
-        sendPrivateSessionBookingMail(req.body.name, req.body.email)
+        sendPrivateSessionBookingMail(req.body.name, req.body.email, req.body.sessionTitle)
         jRes(res, 200, "Mail Queued")
 
     }catch(err){
