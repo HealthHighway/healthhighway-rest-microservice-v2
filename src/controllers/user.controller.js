@@ -6,7 +6,7 @@ import { body, param } from "express-validator"
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js"
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js"
 import { fcmSubscribedChannels } from "../config/server.config.js"
-
+import {userModelS} from "../models/user.model.js"
 
 
 export const userController=async ()=>{
@@ -20,28 +20,9 @@ export const userController=async ()=>{
     
         try{
             
-            const isUser = await UserModel
-                                .findOneAndUpdate(
-                                    { gmailAddress : req.body.gmailAddress },
-                                    { lastEntryLocation : req.body.lastEntryLocation, lastEntryPoint : req.body.lastEntryPoint},
-                                    { new : true }
-                                )
+           
     
-            if(isUser){
-                jRes(res, 200, isUser)
-                return
-            }
-    
-            const newUser = new UserModel({
-                name : req.body.name,
-                gmailAddress: req.body.gmailAddress,
-                profilePhotoUrl : req.body.profilePhotoUrl,
-                lastEntryLocation : req.body.lastEntryLocation,
-                lastEntryPoint : req.body.lastEntryPoint,
-                createdAt : new Date().toISOString()
-            })
-    
-            await newUser.save()
+            const newUser= await userModelS();
     
             // send notification to admin
             sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A New Sign Up`, `A new user named ${newUser.name} has signed up via google oauth`, "")
@@ -54,4 +35,31 @@ export const userController=async ()=>{
             jRes(res, 400, err);
         }
     }
+}
+
+export const Admin=async ()=>{
+    [
+        body('page').exists().withMessage("page not found").isNumeric().withMessage('invalid page type'),
+        body('limit').exists().withMessage("limit not found").isNumeric().withMessage('invalid limit type')
+    ], checkRequestValidationMiddleware, async function (req, res) {
+    
+        try{
+    
+            let {page, limit} = req.body
+            page = Number(page)
+            limit = Number(limit)
+    
+            const users = await UserModel
+                                .find({})
+                                .sort({ createdAt : -1 })
+                                .skip( limit * (page-1) )
+                                .limit(limit)
+                                .lean()
+    
+            jRes(res, 200, users)
+    
+        }catch(err){
+            jRes(res, 400, err);
+        }
+    }  
 }
