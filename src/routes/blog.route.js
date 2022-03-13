@@ -44,7 +44,8 @@ router.post("/addBlog", [
     body('previewText').exists().withMessage("previewText not found").isString().withMessage('invalid previewText type'),
     body('thumbnailImage').exists().withMessage("thumbnailImage not found").isString().withMessage('invalid thumbnailImage type'),
     body('authorId').exists().withMessage("authorId not found").isMongoId().withMessage('invalid authorId type'),
-    body('categoryKeywords').exists().withMessage("categoryKeywords not found").isArray().withMessage('invalid categoryKeywords type'),
+    body('filters').exists().withMessage("filters not found").isArray().withMessage('invalid filters type'),
+    body('keywords').exists().withMessage("keywords not found").isString().withMessage('invalid keywords type'),
     body('htmlContent').exists().withMessage("htmlContent not found").isString().withMessage('invalid htmlContent type'),
     body('createdAt').exists().withMessage("createdAt not found").isString().withMessage('invalid createdAt type'),
 ], checkRequestValidationMiddleware, async (req, res) => {
@@ -101,12 +102,12 @@ router.post("/", [
 
         let mongoQuery = [{ $or : [ { isHidden : {$exists : false} }, { isHidden : { $eq : false } } ] }]
 
-        if(req.body.searchQuery){
+        if(req.body.searchQuery && typeof req.body.searchQuery == "string" && req.body.searchQuery.length ){
             mongoQuery.push({$text: { $search: req.body.searchQuery } })
         }
 
-        if(req.body.categoryKeywords){
-            mongoQuery.push({ categoryKeywords : { $all : req.body.categoryKeywords } })
+        if(req.body.filters  && Array.isArray(req.body.filters) && req.body.filters.length){
+            mongoQuery.push({ filters : { $all : req.body.filters } })
         }
 
         const blogs = await BlogModel
@@ -136,14 +137,14 @@ router.post("/admin", [
         page = Number(page)
         limit = Number(limit)
 
-        let mongoQuery = []
+        let mongoQuery = [{}]
 
-        if(req.body.searchQuery){
+        if(req.body.searchQuery && typeof req.body.searchQuery == "string" && req.body.searchQuery.length ){
             mongoQuery.push({$text: { $search: req.body.searchQuery } })
         }
 
-        if(req.body.categoryKeywords){
-            mongoQuery.push({ categoryKeywords : { $all : req.body.categoryKeywords } })
+        if(req.body.filters && Array.isArray(req.body.filters) && req.body.filters.length ){
+            mongoQuery.push({ filters : { $all : req.body.filters } })
         }
 
         const blogs = await BlogModel

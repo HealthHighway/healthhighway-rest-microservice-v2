@@ -5,7 +5,7 @@ export const callbackSchema = new mongoose.Schema({
     name : { type : String },
     age : { type : String },
     query : { type : String },
-    problem : { type : [String] },
+    categories : { type : [String] },
     phoneNumber : { type : String },
     email : { type : String },
     profession : { type : String },

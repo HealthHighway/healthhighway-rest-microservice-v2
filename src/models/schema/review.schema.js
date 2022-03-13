@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 export const reviewSchema = new mongoose.Schema({
     problem : { type : String },
-    appraisal : { type : String },
+    appraises : { type : String },
     rating : { type : Number },
     others : { type : String },
     sessionId : { type : mongoose.Schema.Types.ObjectId },
