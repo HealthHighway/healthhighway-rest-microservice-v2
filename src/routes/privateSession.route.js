@@ -116,4 +116,31 @@ router.post("/assignTrainer", [
 
 })
 
+router.post("/admin", [
+    body('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page type"),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit type"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
+
+        const privateSessions = await PrivateSessionModel
+                                .find()
+                                .sort({ createdAt : -1 })
+                                .skip( limit * (page-1) )
+                                .limit(limit)
+                                .lean()
+
+        jRes(res, 200, privateSessions)
+
+    }catch(err){
+        console.log(err)
+        jRes(res, 400, err);
+    }
+
+})
+
 export default router;
