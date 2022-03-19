@@ -143,4 +143,21 @@ router.post("/admin", [
 
 })
 
+
+router.post("/user", [
+    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const privateSessions = await PrivateSessionModel.find({ userId : req.body.userId })
+
+        jRes(res, 200, privateSessions)
+
+    }catch(err){
+        jRes(res, 400, err)
+    }
+
+})
+
 export default router;
