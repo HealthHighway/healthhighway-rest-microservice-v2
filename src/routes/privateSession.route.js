@@ -146,11 +146,22 @@ router.post("/admin", [
 
 router.post("/user", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+    body('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page type"),
+    body('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit type"),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
 
-        const privateSessions = await PrivateSessionModel.find({ userId : req.body.userId })
+        let {page, limit} = req.body
+        page = Number(page)
+        limit = Number(limit)
+
+        const privateSessions = await PrivateSessionModel
+                                        .find({ userId : req.body.userId })
+                                        .sort({ createdAt : -1 })
+                                        .skip( limit * (page-1) )
+                                        .limit(limit)
+                                        .lean()
 
         jRes(res, 200, privateSessions)
 
