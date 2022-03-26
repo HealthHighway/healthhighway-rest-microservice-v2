@@ -9,7 +9,7 @@ export const fcmTokenSchema = new mongoose.Schema({
     lastNotificationSentAt : { type : Date, index : true },
     lastNotificationClickedAt : { type : Date, index : true },
     notificationSentTillDate : { type : [String] },
-    userSegment : { type : String }
+    userSegment : { type: mongoose.Schema.Types.ObjectId, ref: 'user-segments' }
 })
 
 export const FcmTokenModel = mongoose.model('fcm-tokens', fcmTokenSchema)

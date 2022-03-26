@@ -155,4 +155,66 @@ router.post("/sendNotificationToAdmin", [
 
 })
 
+router.post("/admin/updateUserSegment", [
+    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+    body('userSegment').exists().withMessage("userSegment not found").isMongoId().withMessage("invalid userSegment"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        let isUserSegmentPresent = await USerSegmentModel.findOne({ _id : req.body.userSegment })
+
+        if(!isUserSegmentPresent){
+            jRes(res, 400, "No Such User Segment Present")
+            return
+        }
+
+        let updatedUser = await FcmTokenModel.findOneAndUpdate(
+            { userId : req.body.userId }, 
+            { userSegment : req.body.userSegment }, 
+            { new : true }
+        )
+
+        if(!updatedUser){
+            jRes(res, 400, "no fcm data with this id present")
+            return
+        }
+
+        jRes(res, 200, updatedUser)
+
+    }catch(err){
+        jRes(res, 400, err)
+    }
+
+})
+
+router.post("/sendNotificationToUserSegment", [
+    body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
+    body('body').exists().withMessage("body not found").isString().withMessage("body should be string"),
+    body('userSegment').exists().withMessage("userSegment not found").isMongoId().withMessage("userSegment should be string"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try{
+
+        const fcmTokens = await FcmTokenModel.find({ userSegment : req.body.userSegment }).lean()
+        const tokens = fcmTokens.map(obj => obj.fcmToken)
+        while(tokens.length > 0){
+            let splicedSection = tokens.splice(100)
+            sendNotification([...splicedSection], req.body.title, req.body.body, "fcm_default_channel12321232", "1")
+            tokens = splicedSection
+        }
+
+        await FcmTokenModel
+                .updateMany(
+                    {}, 
+                    {lastNotificationSendAt : new Date().toISOString(), $push : { notificationsSent : { title : req.body.title, body : req.body.body } } }
+                )
+
+        jRes(res, 200, {notificationSent : true})
+    }catch(err){
+        jRes(res, 400, err)
+    }
+
+})
+
 export default router;
