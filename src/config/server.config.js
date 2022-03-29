@@ -24,8 +24,18 @@ export const sendClean = {
     from_name : "Health Highway",
 }
 
-const __dirname = path.resolve();
+export const jaasConfig = {
+    APPID : "vpaas-magic-cookie-bd79ea6050dc45c5b41d0de18497018a",
+    APIKEY : "vpaas-magic-cookie-bd79ea6050dc45c5b41d0de18497018a/2f0196",
+    EMAIL_LINKED : "lancemate.tech2022@gmail.com",
+    LIMIT_MAU : 25
+}
+
+const __dirname = path.resolve()
+
 export const TEMP_BASE_PATH = path.join(__dirname, "/temp/")
+
+export const JAAS_PRIVATE_KEY_PATH = path.join(__dirname, "/assets/jaas_private_key.pk")
 
 export const fcmSubscribedChannels = {
     ADMIN : "healthhighway2020Admin",

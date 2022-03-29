@@ -21,6 +21,7 @@ import ttc from './ttc.route.js'
 import user from './user.route.js'
 import webinar from './webinar.route.js'
 import filter from './blogFilter.route.js'
+import video from './video.route.js'
 
 const apiRoutes = express.Router()
 
@@ -45,6 +46,7 @@ apiRoutes.use("/trainer", trainer)
 apiRoutes.use("/ttc", ttc)
 apiRoutes.use("/user", user)
 apiRoutes.use("/webinar", webinar)
+apiRoutes.use("/video", video)
 
 export function registerAppRoutes(app) {
     app.use('/api', apiRoutes)
