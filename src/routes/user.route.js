@@ -7,7 +7,6 @@ import { sendNotificationViaSubscribedChannel } from "../utils/notification.util
 import { fcmSubscribedChannels } from "../config/server.config.js"
 import { sendSignUpMail } from "../utils/email.util.js"
 import { privateSessionPlans } from "../constants/price.constant.js"
-import { FreeSessionsToAvail } from "../constants/groupSession.constant.js"
 
 var router = express.Router();
 
@@ -243,7 +242,7 @@ router.post("/upsertBio", [
 
         const updatedUser = await UserModel.findOneAndUpdate(
             { _id : req.body.userId },
-            { bio : req.body.bio?req.body.bio : {} },
+            { bio : req.body.bio?req.body.bio : {}},
             { new : true }
         )
 
@@ -389,7 +388,7 @@ router.post('/admin', [
         const users = await UserModel
                             .find({})
                             .sort({ createdAt : -1 })
-                            .skip( limit * (page-1) )
+                            .skip( limit * (page-1))
                             .limit(limit)
                             .lean()
 
