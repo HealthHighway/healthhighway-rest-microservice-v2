@@ -5,45 +5,18 @@ import { checkRequestValidationMiddleware } from "../utils/requestValidator.util
 import {UserModel} from "../models/schema/user.schema.js"
 import {GroupSessionModel} from "../models/schema/groupSession.schema.js"
 import {TrainerModel} from "../models/schema/trainer.schema.js"
-import short from 'short-uuid'
 import sizeOf from 'buffer-image-size'
 import { getRandomFileName, uploadFileStreamOnS3 } from "../utils/upload.util.js"
 import { giveDates } from "../utils/calendat.util.js";
 import { sendFreeGroupSessionBookingMail, sendGroupSessionBookingMail } from "../utils/email.util.js";
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js";
 import { fcmSubscribedChannels } from "../config/server.config.js";
+import { FreeSessionsToAvail } from '../constants/groupSession.constant.js'
 
-var router = express.Router();
+var router = express.Router()
 
 router.get('/', function (req, res) {
     res.send('Welcome to Group-Session Home Route')
-})
-
-router.get("/isThisGroupAlreadyBooked/:groupSessionId/:userId", [
-    param('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
-    param('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
-], checkRequestValidationMiddleware, async (req, res) => {
-
-    try{
-
-        let isUser = await UserModel.findOne({ _id : req.params.userId })
-
-        if(!isUser){
-            jRes(res, 400, "no user with this id present")
-            return
-        }
-
-        if(isUser.groupSessionsBooked && user.groupSessionsBooked[req.params.groupSessionId]) {
-            jRes(res, 200, { isPresent : true })
-        } else {
-            jRes(res, 200, { isPresent : false })
-        }
-
-    }catch(err){
-        console.log(err)
-        jRes(res, 400, err)
-
-    }
 })
 
 router.post("/", [
@@ -235,21 +208,19 @@ router.get("/admin/getAllUsersEnrolled/:groupSessionId", [
 
 router.post("/bookGroupSession", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+    body('price').exists().withMessage("price not found").isNumeric().withMessage("invalid price"),
     body('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
     body('sessionCount').exists().withMessage("sessionCount not found").isNumeric().withMessage("invalid sessionCount"),
     body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
-    body('days').exists().withMessage("days not found").isArray().withMessage("invalid days"),
-    body('timeIn24HrFormat').exists().withMessage("timeIn24HrFormat not found").isString().withMessage("invalid timeIn24HrFormat"),
     body('timeZone').exists().withMessage("timeZone not found").isString().withMessage("invalid timeZone"),
     body('frontEndOffset').exists().withMessage("frontEndOffset not found").isNumeric().withMessage("invalid frontEndOffset")
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
 
-        const { userId, groupSessionId, sessionCount, startingDate, date, timeIn24HrFormat, timeZone, frontEndOffset, days
-        } = req.body
+        const { userId, groupSessionId, sessionCount, startingDate, timeZone, frontEndOffset, price } = req.body
 
-        const isGroupSession = GroupSessionModel.findOne({ _id : groupSessionId })
+        const isGroupSession = await GroupSessionModel.findOne({ _id : groupSessionId })
 
         if(!isGroupSession){
             jRes(res, 400, "No Such Group Session exists")
@@ -263,44 +234,77 @@ router.post("/bookGroupSession", [
             return
         }
 
-        const schedule = giveDates(days, startingDate, timeIn24HrFormat, sessionCount, timeZone, frontEndOffset)
+        const schedule = giveDates(
+                            isGroupSession.days, 
+                            startingDate, 
+                            isGroupSession.timeIn24HrFormat, 
+                            sessionCount, 
+                            timeZone, 
+                            frontEndOffset,
+                            { bookingDate : new Date().toISOString(), price : req.body.price }
+                        )
 
-        if(isUser.groupSessionsBooked){
-            if(isUser.groupSessionsBooked.get(groupSessionId) == null){
-                isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
+        // if price == 0 => check if free session available, if not then return else book free session
+        if(price == 0){
+            if(isUser.freeSessionsAvailed >= FreeSessionsToAvail || !isGroupSession.availableForFreeEntry) {
+                jRes(res, 400, "No Free Entry Available Now!!")
+                return
+            }else{
+                if(isUser.groupSessionsBooked){
+                    if(isUser.groupSessionsBooked.get(groupSessionId) == null){
+                        isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
+                    }else{
+                        // A session already present cannot be booked as free session again
+                        jRes(res, 400, "Cannot Re-Book Same Session")
+                        return
+                    }
+                }else{
+                    isUser.groupSessionsBooked = {}
+                    isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
+                }
+
                 isUser.freeSessionsAvailed = isUser.freeSessionsAvailed + 1
                 if(isUser.gmailAddress){
                     sendFreeGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
                 }
                 sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Free Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
 
-            }else{
-                const { pastCalendar } = isUser.groupSessionsBooked.get(groupSessionId)
-                schedule.forEach(sch => {
-                    pastCalendar.push(sch)
-                })
-                isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : pastCalendar } )
-                await GroupSessionModel.findOneAndUpdate({_id: groupSessionId}, { $inc: { currentAttendies : 1 }}, { new:true })
-                if(isUser.gmailAddress){
-                    sendGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
-                }
-                sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Paid Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
+                const updatedUser = await isUser.save()
+
+                jRes(res, 200, updatedUser)
             }
         }else{
-            isUser.groupSessionsBooked = {}
-            isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
-            isUser.freeSessionsAvailed = isUser.freeSessionsAvailed + 1
-            if(isUser.gmailAddress){
-                sendFreeGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
+            // if price != 0 => book directly without any checks
+
+            if(isUser.groupSessionsBooked){
+                if(isUser.groupSessionsBooked.get(groupSessionId) == null){
+                    isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
+                }else{
+                    const { calendar } = isUser.groupSessionsBooked.get(groupSessionId)
+                    schedule.forEach(sch => {
+                        calendar.push(sch)
+                    })
+                    isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar } )
+                }
+            }else{
+                isUser.groupSessionsBooked = {}
+                isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
             }
-            sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Free Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
+
+            await GroupSessionModel.findOneAndUpdate({_id: groupSessionId}, { $inc: { currentAttendies : 1 }}, { new:true })
+
+            if(isUser.gmailAddress){
+                sendGroupSessionBookingMail(isUser.name, isUser.gmailAddress, isGroupSession.title)
+            }
+            sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A Paid Group Session Booked`, `User named ${isUser.name} has booked ${isGroupSession.title} session`, "")
+
+            const updatedUser = await isUser.save()
+
+            jRes(res, 200, updatedUser)
         }
 
-        const updatedUser = await isUser.save()
-
-        jRes(res, 200, updatedUser)
-
     }catch(err){
+        console.log(err)
         jRes(res, 400, err)
     }
 })
@@ -342,6 +346,59 @@ router.post("/update", [
 
     }catch(err){
         console.log(err)
+        jRes(res, 400, err)
+    }
+
+})
+
+router.post("/sessionDataForUser", [
+    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+    body('country').exists().withMessage("country not found").isString().withMessage('invalid country type'),
+    body('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try {
+
+        const isGroupSession = await GroupSessionModel.findOne({ _id : req.body.groupSessionId })
+
+        if(!isGroupSession){
+            jRes(res, 400, "No Such Group Session Exists");
+            return;
+        }
+
+        const isUser = await UserModel.findOne({ _id : req.body.userId })
+
+        if(!isUser){
+            jRes(res, 400, "No such User Exists");
+            return;
+        }
+
+        if(isUser.freeSessionsAvailed < FreeSessionsToAvail && isGroupSession.availableForFreeEntry){
+            jRes(
+                    res, 
+                    200, 
+                    {
+                        price : 0, 
+                        currency : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].currency:isGroupSession.pricing["DEFAULT"].currency,
+                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked[req.body.groupSessionId] ? true : false,
+                        isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true
+                    }
+                )
+        }else{
+            jRes(
+                    res, 
+                    200, 
+                    { 
+                        price : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].value:isGroupSession.pricing["DEFAULT"].value, 
+                        currency : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].currency:isGroupSession.pricing["DEFAULT"].currency,
+                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked[req.body.groupSessionId] ? true : false,
+                        isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true
+                    }
+                )
+        }
+
+    }catch(err){
+        console.log(err);
         jRes(res, 400, err)
     }
 

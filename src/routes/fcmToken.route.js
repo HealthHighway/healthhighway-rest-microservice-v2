@@ -5,6 +5,7 @@ import { checkRequestValidationMiddleware } from "../utils/requestValidator.util
 import {FcmTokenModel} from "../models/schema/fcmToken.schema.js"
 import {sendNotification, sendNotificationViaSubscribedChannel} from "../utils/notification.util.js"
 import { fcmSubscribedChannels } from "../config/server.config.js";
+import { NotificationModel } from '../models/schema/notification.schema.js'
 
 var router = express.Router();
 
@@ -123,6 +124,14 @@ router.post("/sendBatchNotifications", [
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try{
+
+        const notification = new NotificationModel({
+            title:req.body.title,
+            body:req.body.body,
+            clickToAction : req.body.clickToAction?req.body.clickToAction:"",
+            createdAt : new Date().toISOString(),
+            category : req.body.category?req.body.category:""
+        })
 
         sendNotification(req.body.fcmTokens, req.body.title, req.body.body, "fcm_default_channel12321232", "1")
         await FcmTokenModel

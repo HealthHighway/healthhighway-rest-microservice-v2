@@ -9,6 +9,7 @@ import { sendPrivateSessionBookingMail } from "../utils/email.util.js";
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js";
 import { fcmSubscribedChannels } from "../config/server.config.js";
 import { TrainerModel } from "../models/schema/trainer.schema.js";
+import { UserModel } from "../models/schema/user.schema.js";
 
 var router = express.Router();
 
@@ -19,16 +20,15 @@ router.get('/', function (req, res) {
 router.post("/bookPrivateSession", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('problem').exists().withMessage("problem not found").isString().withMessage("invalid problem"),
-    body('name').exists().withMessage("name not found").isString().withMessage("invalid name"),
     body('price').exists().withMessage("price not found").isNumeric().withMessage("invalid price"),
+    body('currency').exists().withMessage("currency not found").isString().withMessage("invalid currency"),
     body('sessionCount').exists().withMessage("sessionCount not found").isNumeric().withMessage("invalid sessionCount"),
     body('timeIn24HrFormat').exists().withMessage("timeIn24HrFormat not found").isString().withMessage("invalid timeIn24HrFormat"),
     body('days').exists().withMessage("days not found").isArray().withMessage("invalid days"),
     body('weight').exists().withMessage("weight not found").isString().withMessage("invalid weight"),
-    body('height').exists().withMessage("height not found").isString().withMessage("invalid height"),
     body('age').exists().withMessage("age not found").isNumeric().withMessage("invalid age"),
     body('trainerGenderPreference').exists().withMessage("trainerGenderPreference not found").isString().withMessage("invalid trainerGenderPreference"),
-    body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
+    body('startingDate').exists().withMessage("startingDate not found").isString().withMessage("invalid startingDate"),
     body('timeZone').exists().withMessage("timeZone not found").isString().withMessage("invalid timeZone"),
     body('frontEndOffset').exists().withMessage("frontEndOffset not found").isNumeric().withMessage("invalid frontEndOffset")
 ], checkRequestValidationMiddleware, async (req, res) => {
@@ -43,10 +43,10 @@ router.post("/bookPrivateSession", [
         }
 
         const { 
-            problem, userId, price, sessionCount, timeIn24HrFormat, days, weight, height, age, trainerGenderPreference, startingDate, timeZone, frontEndOffset, name
+            problem, userId, price, sessionCount, timeIn24HrFormat, days, weight, height, age, trainerGenderPreference, startingDate, currency, timeZone, frontEndOffset, name
         } = req.body;
 
-        const schedule = giveDates(days, startingDate, timeIn24HrFormat, sessionCount, timeZone, frontEndOffset)
+        const schedule = giveDates(days, startingDate, timeIn24HrFormat, sessionCount, timeZone, frontEndOffset, {})
 
         const newPrivateSession = new PrivateSessionModel({
             problem, 
@@ -61,11 +61,17 @@ router.post("/bookPrivateSession", [
             age, 
             calendar : schedule,
             trainerGenderPreference,
+            currency,
             createdAt : new Date().toISOString(), 
             userId
         })
 
         await newPrivateSession.save()
+
+        await UserModel.findOneAndUpdate(
+            { _id : req.body.userId },
+            { $push : { privateSessionsBooked : newPrivateSession._id } }
+        )
 
         //send mail to user
         if(isUser.gmailAddress){
@@ -77,6 +83,7 @@ router.post("/bookPrivateSession", [
         jRes(res, 200, newPrivateSession)
 
     }catch(err){
+        console.log(err);
         jRes(res, 400, err)
     }
 

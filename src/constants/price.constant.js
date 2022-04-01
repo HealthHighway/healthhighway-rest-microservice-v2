@@ -1,48 +1,48 @@
 
-export const pricingPlans = {
+export const privateSessionPlans = {
     "IN" : {
-        "defaultCurrency" : "INR",
-        "plans" : {
-            "Starter" : { noc : 1, price : 99 },
-            "Yoga Fan" : { noc : 16, price : 2149 },
-            "Yoga Buff" : { noc : 20, price : 2449 },
-            "Yoga Addict" : { noc : 24, price : 2849 }
-        }
+        "currency" : "INR",
+        "plans" : [
+            { title : "Starter", sessions : 1, originalPrice : 99, discountedPrice : 99 },
+            { title : "Yoga Fan", sessions : 16, originalPrice : 2149, discountedPrice : 2149 },
+            { title : "Yoga Buff", sessions : 20, originalPrice : 2449, discountedPrice : 2449 },
+            { title : "Yoga Addict", sessions : 24, originalPrice : 2849, discountedPrice : 2849 },
+        ]
     },
     "US" : {
-        "defaultCurrency" : "USD",
-        "plans" : {
-            "Starter" : { noc : 1, price : 99 },
-            "Yoga Fan" : { noc : 16, price : 2149 },
-            "Yoga Buff" : { noc : 20, price : 2449 },
-            "Yoga Addict" : { noc : 24, price : 2849 }
-        }
+        "currency" : "USD",
+        "plans" : [
+            { title : "Starter", sessions : 1, originalPrice : 99, discountedPrice : 99 },
+            { title : "Yoga Fan", sessions : 16, originalPrice : 2149, discountedPrice : 2149 },
+            { title : "Yoga Buff", sessions : 20, originalPrice : 2449, discountedPrice : 2449 },
+            { title : "Yoga Addict", sessions : 24, originalPrice : 2849, discountedPrice : 2849 },
+        ]
     },
     "ZA" : {
-        "defaultCurrency" : "USD",
-        "plans" : {
-            "Starter" : { noc : 1, price : 99 },
-            "Yoga Fan" : { noc : 16, price : 2149 },
-            "Yoga Buff" : { noc : 20, price : 2449 },
-            "Yoga Addict" : { noc : 24, price : 2849 }
-        }
+        "currency" : "USD",
+        "plans" : [
+            { title : "Starter", sessions : 1, originalPrice : 99, discountedPrice : 99 },
+            { title : "Yoga Fan", sessions : 16, originalPrice : 2149, discountedPrice : 2149 },
+            { title : "Yoga Buff", sessions : 20, originalPrice : 2449, discountedPrice : 2449 },
+            { title : "Yoga Addict", sessions : 24, originalPrice : 2849, discountedPrice : 2849 },
+        ]
     },
     "AU" : {
-        "defaultCurrency" : "USD",
-        "plans" : {
-            "Starter" : { noc : 1, price : 99 },
-            "Yoga Fan" : { noc : 16, price : 2149 },
-            "Yoga Buff" : { noc : 20, price : 2449 },
-            "Yoga Addict" : { noc : 24, price : 2849 }
-        }
+        "currency" : "USD",
+        "plans" : [
+            { title : "Starter", sessions : 1, originalPrice : 99, discountedPrice : 99 },
+            { title : "Yoga Fan", sessions : 16, originalPrice : 2149, discountedPrice : 2149 },
+            { title : "Yoga Buff", sessions : 20, originalPrice : 2449, discountedPrice : 2449 },
+            { title : "Yoga Addict", sessions : 24, originalPrice : 2849, discountedPrice : 2849 },
+        ]
     },
     "DEFAULT_COUNTRY" : {
-        "defaultCurrency" : "USD",
-        "plans" : {
-            "Starter" : { noc : 1, price : 99 },
-            "Yoga Fan" : { noc : 16, price : 2149 },
-            "Yoga Buff" : { noc : 20, price : 2449 },
-            "Yoga Addict" : { noc : 24, price : 2849 }
-        }
+        "currency" : "USD",
+        "plans" : [
+            { title : "Starter", sessions : 1, originalPrice : 99, discountedPrice : 99 },
+            { title : "Yoga Fan", sessions : 16, originalPrice : 2149, discountedPrice : 2149 },
+            { title : "Yoga Buff", sessions : 20, originalPrice : 2449, discountedPrice : 2449 },
+            { title : "Yoga Addict", sessions : 24, originalPrice : 2849, discountedPrice : 2849 },
+        ]
     }
 }

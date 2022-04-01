@@ -13,8 +13,6 @@ export const groupSessionSchema = new mongoose.Schema({
     advisaryListForSession : { type : [String] },
     advisaryListAgainstSession : { type : [String] },
     benefits : { type : [String] },
-    price : Number,
-    currency : String, 
     level : String,
     showOnPlatform : { type : Boolean, default : true },
     timeIn24HrFormat : String,
@@ -26,6 +24,8 @@ export const groupSessionSchema = new mongoose.Schema({
     startingDate : { type : Date },
     hostOffsetFromGMT : {type : Number, default : 330}, // date offset of place where session is to hosted - date offset of GMT
     timeZone : {type : String, default : "India Standard Time"},
+    pricing : {type : Object},
+    availableForFreeEntry : {type : Boolean, default : true}
 }, {
     timestamps: true
 })

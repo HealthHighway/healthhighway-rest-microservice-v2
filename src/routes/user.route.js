@@ -6,7 +6,8 @@ import {UserModel} from "../models/schema/user.schema.js"
 import { sendNotificationViaSubscribedChannel } from "../utils/notification.util.js"
 import { fcmSubscribedChannels } from "../config/server.config.js"
 import { sendSignUpMail } from "../utils/email.util.js"
-import { pricingPlans } from "../constants/price.constant.js"
+import { privateSessionPlans } from "../constants/price.constant.js"
+import { FreeSessionsToAvail } from "../constants/groupSession.constant.js"
 
 var router = express.Router();
 
@@ -105,8 +106,10 @@ router.post("/entryWithPhoneNumber", [
 
         await newUser.save()
 
+        //send them an sms
+
         // send notification to admin
-        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A New Sign Up`, `A new user named ${newUser.name} has signed up via phone number`, "")
+        sendNotificationViaSubscribedChannel(fcmSubscribedChannels.ADMIN, `A New Sign Up`, `A new user${newUser.name?"named "+newUser.name:""} has signed up via phone number`, "")
 
         jRes(res, 200, newUser)
 
@@ -232,7 +235,7 @@ router.post("/upsertName", [
     }
 })
 
-router.post("/upsertBio",[
+router.post("/upsertBio", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
 ], checkRequestValidationMiddleware, async (req, res) => {
 
@@ -404,10 +407,10 @@ router.post("/privateSessionPlans", [
     try {
 
         let { country } = req.body
-        if(country && pricingPlans[country]){
-            jRes(res, 200, pricingPlans[country])
+        if(country && privateSessionPlans[country]){
+            jRes(res, 200, privateSessionPlans[country])
         }else{
-            jRes(res, 200, pricingPlans["DEFAULT_COUNTRY"])
+            jRes(res, 200, privateSessionPlans["DEFAULT_COUNTRY"])
         }
 
     }catch(err){

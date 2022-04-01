@@ -3,6 +3,7 @@ import { body, param } from "express-validator"
 import { jRes } from "../utils/response.util.js"
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js"
 import {CurateModel} from "../models/schema/curate.schema.js"
+import {UserModel} from "../models/schema/user.schema.js"
 import {FcmTokenModel} from "../models/schema/fcmToken.schema.js"
 import {sendNotification} from "../utils/notification.util.js"
 
@@ -59,11 +60,18 @@ router.get("/:userId/:page/:limit", [
         let {page, limit} = req.params
         let skip = Number(Number(limit) * (Number(page) - 1))
 
+        const user = await UserModel.findOne({ _id : req.params.userId })
+
+        if(!user.bio){
+            jRes(res, 200, { status : 0 })
+            return;
+        }
+
         let curated = await CurateModel.find({ userId : req.params.userId })
                                     .skip(skip)
                                     .limit(Number(limit))
                                     .sort({ createdAt : -1 })
-        jRes(res, 200, curated)
+        jRes(res, 200, { status : curated.length==0?1:2, curated })
 
     }catch(err){
         jRes(res, 400, err)

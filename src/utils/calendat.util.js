@@ -1,5 +1,5 @@
 
-export function giveDates(days, startingDate, sessionTime, noc, timeZone, frontEndOffset) {
+export function giveDates(days, startingDate, sessionTime, noc, timeZone, frontEndOffset, extras) {
 
     // here frontEndOffset means gap from UTC/GMT time
     let serverOffset = -(new Date().getTimezoneOffset())
@@ -9,14 +9,14 @@ export function giveDates(days, startingDate, sessionTime, noc, timeZone, frontE
         daySet.add(day);
     })
     let sessionSchedule=[]
-    let splits = sessionTime.split(":")
+    let splits = [sessionTime.substring(0, 2), sessionTime.substring(2, 4), sessionTime.substring(4)]
     let extract = new Date(startingDate);
     let serverDate = new Date(extract.getFullYear(), extract.getMonth(), extract.getDate(), splits[0], splits[1], splits[2])
     let temp = new Date(serverDate.getTime() - (frontEndOffset - serverOffset) * 60 * 1000)
     let count = 0;
     while(count < noc){
         if(daySet.has(temp.toDateString().substring(0, 3))) {
-            sessionSchedule.push({fullDate : temp.toISOString(), sessionAttended : false, timeZone })
+            sessionSchedule.push({fullDate : temp.toISOString(), sessionAttended : false, timeZone, ...extras })
             count++;
         }
         temp.setDate(temp.getDate() + 1)
