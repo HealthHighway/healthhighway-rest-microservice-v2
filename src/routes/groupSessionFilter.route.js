@@ -17,7 +17,7 @@ router.post("/", [
 
     try{
 
-        const isFilterPresent = await GroupSessionFilterModel({ abbr : req.body.abbr })
+        const isFilterPresent = await GroupSessionFilterModel.findOne({ abbr : req.body.abbr })
 
         if(isFilterPresent){
             jRes(res, 400, "This filter is already present")
@@ -31,11 +31,11 @@ router.post("/", [
         jRes(res, 200, newFilter)
 
     }catch(err){
-
+        jRes(res, 400, err)
     }
 })
 
-router.get("/", async (req, res) => {
+router.get("/getAllGroupSessionFilters", async (req, res) => {
 
     try {
 

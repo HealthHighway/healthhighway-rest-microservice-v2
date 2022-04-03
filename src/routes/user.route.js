@@ -286,14 +286,34 @@ router.get("/getAllUpcomingSessions/:userId", [
 
             for(let i=0; i<session.calendar.length; i++){
 
-                let diff = new Date(session.calendar[i].fullDate) - new Date()
-                if (diff < 24 * 60 * 60 * 1000 && diff > 0){
+                let lo=0, hi=session.calendar.length-1, ans=0;
 
-                    let scheduledTime = session.calendar[i].fullDate
-                    delete session.calendar
-                    scheduledPrivateSessions.push({...session, scheduledTime })
-                    break;
+                let takeMe = false;
+
+                while(lo<=hi){
+                    let mid=Math.floor((lo+hi)/2)
+                    if(session.calendar[mid].fullDate - new Date() < -2 * 60 * 60 * 1000){
+                        ans=mid;
+                    }else{
+                        lo=mid+1;
+                    }
                 }
+                
+                if(session.calendar[mid].fullDate - new Date() >= -2 * 60 * 60 * 1000){
+                    takeMe = true;
+                }
+
+                if(!takeMe && ans+1 < session.calendar.length){
+                    if(session.calendar[mid+1].fullDate - new Date() < 24 * 60 * 60 * 1000){
+                        takeMe = true;
+                        ans=mid+1;
+                    }
+                }
+
+                let scheduledTime = session.calendar[ans].fullDate
+                delete session.calendar
+                scheduledPrivateSessions.push({...session, scheduledTime })
+
             }
         })
         
