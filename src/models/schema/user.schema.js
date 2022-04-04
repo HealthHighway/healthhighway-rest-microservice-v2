@@ -23,6 +23,7 @@ export const userSchema = new mongoose.Schema({
     },
     createdAt : {type : Date, index : true},
     status : String,
+    likedGroupSessions : Object,
     likedBlogs : Object,
     likedSocials : Object,
     lastEntryLocation : Object,

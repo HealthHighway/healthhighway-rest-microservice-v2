@@ -25,7 +25,12 @@ export const groupSessionSchema = new mongoose.Schema({
     hostOffsetFromGMT : {type : Number, default : 330}, // date offset of place where session is to hosted - date offset of GMT
     timeZone : {type : String, default : "India Standard Time"},
     pricing : {type : Object},
-    availableForFreeEntry : {type : Boolean, default : true}
+    availableForFreeEntry : {type : Boolean, default : true},
+    rating : {
+        value : Number,
+        frequency : Number
+    },
+    likeCount : Number
 }, {
     timestamps: true
 })
