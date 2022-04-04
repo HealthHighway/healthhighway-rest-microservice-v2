@@ -15,7 +15,7 @@ export const groupSessionSchema = new mongoose.Schema({
     benefits : { type : [String] },
     level : String,
     showOnPlatform : { type : Boolean, default : true },
-    timeIn24HrFormat : String,
+    timeIn24HrFormat : {type : String, index : true},
     minsPerSession : { type : Number, default : 50 },  
     days : { type : [String] },
     filters : { type : [mongoose.Schema.Types.ObjectId], index : true, ref: "blog-filters" },

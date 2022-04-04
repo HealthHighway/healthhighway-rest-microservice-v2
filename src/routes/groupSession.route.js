@@ -106,8 +106,12 @@ router.post("/", [
             mongoQuery.push({$text: { $search: req.body.searchQuery } })
         }
 
-        if(req.body.filters  && Array.isArray(req.body.filters) && req.body.filters.length){
+        if(req.body.filters && Array.isArray(req.body.filters) && req.body.filters.length){
             mongoQuery.push({ filters : { $all : req.body.filters } })
+        }
+
+        if(req.body.timeRange && typeof req.body.timeRange == "object" && req.body.timeRange["min"] && req.body.timeRange["max"]){
+            mongoQuery.push({ timeIn24HrFormat : { $gte : req.body.timeRange.min, $lte : req.body.timeRange.max } })
         }
 
         const groupSessions = await GroupSessionModel
