@@ -19,7 +19,7 @@ router.get('/', function (req, res) {
     res.send('Welcome to Group-Session Home Route')
 })
 
-router.post("/", [
+router.post("/addGroupSession", [
     body('trainerId').exists().withMessage("trainerId not found").isMongoId().withMessage("invalid trainerId"),
     body('title').exists().withMessage("title not found").isString().withMessage("invalid title"),
     body('limitOfAttendies').exists().withMessage("limitOfAttendies not found").isNumeric().withMessage("invalid limitOfAttendies"),
@@ -106,8 +106,8 @@ router.post("/", [
             mongoQuery.push({$text: { $search: req.body.searchQuery } })
         }
 
-        if(req.body.categoryKeywords){
-            mongoQuery.push({ categoryKeywords : { $all : req.body.categoryKeywords } })
+        if(req.body.filters  && Array.isArray(req.body.filters) && req.body.filters.length){
+            mongoQuery.push({ filters : { $all : req.body.filters } })
         }
 
         const groupSessions = await GroupSessionModel
