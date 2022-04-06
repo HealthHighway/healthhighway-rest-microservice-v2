@@ -116,7 +116,7 @@ router.post("/", [
 
         const groupSessions = await GroupSessionModel
                                 .find({ $and : mongoQuery })
-                                .sort({ createdAt : -1 })
+                                // .sort({ createdAt : -1 })
                                 .skip( limit * (page-1) )
                                 .limit(limit)
                                 .lean()
