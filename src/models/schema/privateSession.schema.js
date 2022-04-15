@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 export const privateSessionSchema = new mongoose.Schema({
     problem : String, 
+    subCategories : [String],
     price : Number, 
     currency : String,
     sessionCount : Number, 

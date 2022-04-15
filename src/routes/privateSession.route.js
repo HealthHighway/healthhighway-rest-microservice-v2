@@ -20,6 +20,7 @@ router.get('/', function (req, res) {
 router.post("/bookPrivateSession", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('problem').exists().withMessage("problem not found").isString().withMessage("invalid problem"),
+    body('subCategories').exists().withMessage("subCategories not found").isArray().withMessage("invalid subCategories"),
     body('price').exists().withMessage("price not found").isNumeric().withMessage("invalid price"),
     body('currency').exists().withMessage("currency not found").isString().withMessage("invalid currency"),
     body('sessionCount').exists().withMessage("sessionCount not found").isNumeric().withMessage("invalid sessionCount"),
@@ -43,13 +44,14 @@ router.post("/bookPrivateSession", [
         }
 
         const { 
-            problem, userId, price, sessionCount, timeIn24HrFormat, days, weight, height, age, trainerGenderPreference, startingDate, currency, timeZone, frontEndOffset, name
+            problem, subCategories, userId, price, sessionCount, timeIn24HrFormat, days, weight, height, age, trainerGenderPreference, startingDate, currency, timeZone, frontEndOffset, name
         } = req.body;
 
         const schedule = giveDates(days, startingDate, timeIn24HrFormat, sessionCount, timeZone, frontEndOffset, {})
 
         const newPrivateSession = new PrivateSessionModel({
             problem, 
+            subCategories,
             price, 
             sessionCount, 
             timeIn24HrFormat, 
