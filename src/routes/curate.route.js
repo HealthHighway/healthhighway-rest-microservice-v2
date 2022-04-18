@@ -49,31 +49,31 @@ router.post("/", [
 
 })
 
-router.get("/:userId/:page/:limit", [
-    param('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
-    param('page').exists().withMessage("page not found").isNumeric().withMessage("invalid page"),
-    param('limit').exists().withMessage("limit not found").isNumeric().withMessage("invalid limit"),
+router.get("/:userId/", [
+    param('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId")
 ], checkRequestValidationMiddleware, async (req, res) => {
 
     try {
 
-        let {page, limit} = req.params
-        let skip = Number(Number(limit) * (Number(page) - 1))
-
         const user = await UserModel.findOne({ _id : req.params.userId })
 
+        if(!user){
+            jRes(res, 400, "No Such User Exists")
+            return;
+        }
+
         if(!user.bio){
-            jRes(res, 200, { status : 0 })
+            jRes(res, 200, { curated : [], status : 0 })
             return;
         }
 
         let curated = await CurateModel.find({ userId : req.params.userId })
-                                    .skip(skip)
-                                    .limit(Number(limit))
                                     .sort({ createdAt : -1 })
-        jRes(res, 200, { status : curated.length==0?1:2, curated })
+
+        jRes(res, 200, { curated, status : curated.length?2:1 })
 
     }catch(err){
+        console.log(err)
         jRes(res, 400, err)
     }
 
