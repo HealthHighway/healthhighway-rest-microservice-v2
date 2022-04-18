@@ -213,6 +213,7 @@ router.get("/admin/getAllUsersEnrolled/:groupSessionId", [
 router.post("/bookGroupSession", [
     body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
     body('price').exists().withMessage("price not found").isNumeric().withMessage("invalid price"),
+    body('currency').exists().withMessage("currency not found").isString().withMessage("invalid currency"),
     body('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
     body('sessionCount').exists().withMessage("sessionCount not found").isNumeric().withMessage("invalid sessionCount"),
     body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
@@ -245,7 +246,7 @@ router.post("/bookGroupSession", [
                             sessionCount, 
                             timeZone, 
                             frontEndOffset,
-                            { bookingDate : new Date().toISOString(), price : req.body.price }
+                            { bookingDate : new Date().toISOString(), price : req.body.price, currency : req.body.currency }
                         )
 
         // if price == 0 => check if free session available, if not then return else book free session
