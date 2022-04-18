@@ -216,7 +216,7 @@ router.post("/bookGroupSession", [
     body('currency').exists().withMessage("currency not found").isString().withMessage("invalid currency"),
     body('groupSessionId').exists().withMessage("groupSessionId not found").isMongoId().withMessage("invalid groupSessionId"),
     body('sessionCount').exists().withMessage("sessionCount not found").isNumeric().withMessage("invalid sessionCount"),
-    body('startingDate').exists().withMessage("startingDate not found").isDate().withMessage("invalid startingDate"),
+    body('startingDate').exists().withMessage("startingDate not found").isString().withMessage("invalid startingDate"),
     body('timeZone').exists().withMessage("timeZone not found").isString().withMessage("invalid timeZone"),
     body('frontEndOffset').exists().withMessage("frontEndOffset not found").isNumeric().withMessage("invalid frontEndOffset")
 ], checkRequestValidationMiddleware, async (req, res) => {
