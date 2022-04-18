@@ -385,7 +385,7 @@ router.post("/sessionDataForUser", [
                     {
                         price : 0, 
                         currency : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].currency:isGroupSession.pricing["DEFAULT"].currency,
-                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked[req.body.groupSessionId] ? true : false,
+                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked.get(req.body.groupSessionId) ? true : false,
                         isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true
                     }
                 )
@@ -396,7 +396,7 @@ router.post("/sessionDataForUser", [
                     { 
                         price : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].value:isGroupSession.pricing["DEFAULT"].value, 
                         currency : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].currency:isGroupSession.pricing["DEFAULT"].currency,
-                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked[req.body.groupSessionId] ? true : false,
+                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked.get(req.body.groupSessionId) ? true : false,
                         isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true
                     }
                 )
