@@ -434,7 +434,7 @@ router.post("/toggleLikeDislike", [
         }
 
         if(isUser.likedGroupSessions && isUser.likedGroupSessions[req.body.groupSessionId]){
-            delete isUser[req.body.groupSessionId]
+            delete isUser.likedGroupSessions[req.body.groupSessionId]
             await isUser.save()
             await GroupSessionModel.findOneAndUpdate({ _id : req.body.groupSessionId }, { likeCount : {$inc : -1} })
             jRes(res, 200, isUser)
