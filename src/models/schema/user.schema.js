@@ -23,7 +23,10 @@ export const userSchema = new mongoose.Schema({
     },
     createdAt : {type : Date, index : true},
     status : String,
-    likedGroupSessions : Object,
+    likedGroupSessions : {
+        type : Map,
+        of : String
+    },
     likedBlogs : Object,
     likedSocials : Object,
     lastEntryLocation : Object,
