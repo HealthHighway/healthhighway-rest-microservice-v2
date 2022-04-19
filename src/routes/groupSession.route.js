@@ -260,7 +260,7 @@ router.post("/bookGroupSession", [
                         isUser.groupSessionsBooked.set( groupSessionId, { session : groupSessionId, calendar : schedule } )
                     }else{
                         // A session already present cannot be booked as free session again
-                        jRes(res, 400, "Cannot Re-Book Same Session")
+                        jRes(res, 400, "Cannot Re-Book Same Session for free")
                         return
                     }
                 }else{
@@ -378,6 +378,13 @@ router.post("/sessionDataForUser", [
             return;
         }
 
+        let isSessionAlreadyBooked = isUser.groupSessionsBooked && isUser.groupSessionsBooked.get(req.body.groupSessionId) ? true:false
+        let sessCalendar=null;
+        if(isSessionAlreadyBooked){
+            const { calendar } = isUser.groupSessionsBooked.get(req.body.groupSessionId)
+            sessCalendar=calendar
+        }
+
         if(isUser.freeSessionsAvailed < FreeSessionsToAvail && isGroupSession.availableForFreeEntry){
             jRes(
                     res, 
@@ -385,8 +392,9 @@ router.post("/sessionDataForUser", [
                     {
                         price : 0, 
                         currency : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].currency:isGroupSession.pricing["DEFAULT"].currency,
-                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked.get(req.body.groupSessionId) ? true : false,
-                        isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true
+                        isSessionAlreadyBooked,
+                        isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true,
+                        endingDate : isSessionAlreadyBooked?sessCalendar[sessCalendar.length-1].fullDate:null
                     }
                 )
         }else{
@@ -396,8 +404,9 @@ router.post("/sessionDataForUser", [
                     { 
                         price : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].value:isGroupSession.pricing["DEFAULT"].value, 
                         currency : isGroupSession.pricing[req.body.country]?isGroupSession.pricing[req.body.country].currency:isGroupSession.pricing["DEFAULT"].currency,
-                        isSessionAlreadyBooked : isUser.groupSessionsBooked && isUser.groupSessionsBooked.get(req.body.groupSessionId) ? true : false,
-                        isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true
+                        isSessionAlreadyBooked,
+                        isSessionFull : isGroupSession.currentAttendies<isGroupSession.limitOfAttendies?false:true,
+                        endingDate : isSessionAlreadyBooked?sessCalendar[sessCalendar.length-1].fullDate:null
                     }
                 )
         }
