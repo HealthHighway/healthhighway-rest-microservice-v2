@@ -1,5 +1,6 @@
 import express from "express";
 import { body, param } from "express-validator";
+import mongoose from "mongoose";
 import { jRes } from "../utils/response.util.js";
 import { checkRequestValidationMiddleware } from "../utils/requestValidator.util.js";
 import {PrivateSessionModel} from "../models/schema/privateSession.schema.js"
@@ -65,7 +66,8 @@ router.post("/bookPrivateSession", [
             trainerGenderPreference,
             currency,
             createdAt : new Date().toISOString(), 
-            userId
+            userId,
+            curatedId : req.body.curatedId && mongoose.isValidObjectId(req.body.curatedId) ? req.body.curatedId : null
         })
 
         await newPrivateSession.save()

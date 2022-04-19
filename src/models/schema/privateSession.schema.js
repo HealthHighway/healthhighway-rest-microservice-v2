@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 
 export const privateSessionSchema = new mongoose.Schema({
+    curatedId : { type: mongoose.Schema.Types.ObjectId, ref: 'curates'},
     problem : String, 
     subCategories : [String],
     price : Number, 
