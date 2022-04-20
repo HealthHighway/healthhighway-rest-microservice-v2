@@ -403,4 +403,43 @@ router.get("/dislike/:blogId/:userId", [
     }
 })
 
+router.post("/toggleLikeDislike", [
+    body('userId').exists().withMessage("userId not found").isMongoId().withMessage("invalid userId"),
+    body('blogId').exists().withMessage("blogId not found").isMongoId().withMessage("invalid blogId"),
+], checkRequestValidationMiddleware, async (req, res) => {
+
+    try {
+        // searching for whether groupSession exists or not makes api un-necessarily slow so commenting out
+
+        const isUser = await UserModel.findOne({ _id : req.body.userId })
+
+        if(!isUser){
+            jRes(res, 400, "No such User Exists")
+            return;
+        }
+
+
+        if(isUser.likedBlogs && isUser.likedBlogs.get(req.body.blogId)){
+            isUser.likedBlogs.delete(req.body.blogId)
+            await isUser.save()
+            await BlogModel.findOneAndUpdate({ _id : req.body.blogId }, { $inc : {likes : -1} })
+            jRes(res, 200, isUser)
+        }else{
+            console.log("here in not found")
+            if(!isUser.likedBlogs){
+                isUser.likedBlogs={}
+            }
+            isUser.likedBlogs.set(req.body.blogId, req.body.blogId)
+            await isUser.save()
+            await BlogModel.findOneAndUpdate({ _id : req.body.blogId }, { $inc : {likes : 1} })
+            jRes(res, 200, isUser)
+        }
+
+    }catch(err){
+        console.log(err)
+        jRes(res, 400, err)
+    }
+
+})
+
 export default router;

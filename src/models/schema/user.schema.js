@@ -27,7 +27,10 @@ export const userSchema = new mongoose.Schema({
         type : Map,
         of : String
     },
-    likedBlogs : Object,
+    likedBlogs : {
+        type : Map,
+        of : String
+    },
     likedSocials : Object,
     lastEntryLocation : Object,
     lastEntryPoint : String
