@@ -4,6 +4,11 @@ import admin from "firebase-admin";
 
 import {firebaseConfig} from "../config/firebase.config.js";
 
+admin.initializeApp({
+    credential: admin.credential.cert(firebaseConfig),
+    databaseURL: "https://healthhighway-45963.firebaseio.com"
+})
+
 export const sendNotification = (fcmTokens, title, body, android_channel_id, badge) => {
     admin.messaging().sendToDevice(
         fcmTokens, 
